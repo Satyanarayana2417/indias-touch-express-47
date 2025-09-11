@@ -18,7 +18,7 @@ const Cart = () => {
   const shipping = 0; // Free shipping or calculated at checkout
   const total = subtotal + shipping;
 
-  const handleQuantityChange = (id: number, newQuantity: number) => {
+  const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity >= 1) {
       updateQuantity(id, newQuantity);
     }
@@ -144,7 +144,7 @@ const Cart = () => {
                                   variant="ghost"
                                   size="sm"
                                   className="h-9 w-9 p-0 hover:bg-gray-100"
-                                  onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                  onClick={() => handleQuantityChange(String(item.id), item.quantity - 1)}
                                   disabled={item.quantity <= 1}
                                 >
                                   <Minus className="h-4 w-4" />
@@ -156,7 +156,7 @@ const Cart = () => {
                                   variant="ghost"
                                   size="sm"
                                   className="h-9 w-9 p-0 hover:bg-gray-100"
-                                  onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                  onClick={() => handleQuantityChange(String(item.id), item.quantity + 1)}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>
@@ -174,7 +174,7 @@ const Cart = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => removeItem(String(item.id))}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
