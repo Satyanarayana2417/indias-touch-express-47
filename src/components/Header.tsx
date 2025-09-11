@@ -1,4 +1,4 @@
-import { Search, User, ShoppingCart, Menu, MapPin, Package, ChevronDown, Globe, Heart } from "lucide-react";
+import { Search, User, ShoppingCart, Menu, MapPin, Package, ChevronDown, Globe, Heart, Home, Store, Truck, UtensilsCrossed, Sparkles, Info } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,13 +87,34 @@ const Header = () => {
                   </DrawerTitle>
                 </DrawerHeader>
                 <nav className="flex flex-col divide-y py-2 text-base">
-                  <a href="/" className="py-3 px-2">Home</a>
-                  <a href="/shop-products" className="py-3 px-2">Shop Products</a>
-                  <a href="/courier-services" className="py-3 px-2">Courier Services</a>
-                  <a href="/track-order" className="py-3 px-2">Track Order</a>
-                  <a href="/food-items" className="py-3 px-2">Food Items</a>
-                  <a href="/decorative-items" className="py-3 px-2">Decorative Items</a>
-                  <a href="/about-us" className="py-3 px-2">About Us</a>
+                  <a href="/" className="py-3 px-2 flex items-center space-x-3">
+                    <Home className="h-5 w-5 text-gray-600" />
+                    <span>Home</span>
+                  </a>
+                  <a href="/shop-products" className="py-3 px-2 flex items-center space-x-3">
+                    <Store className="h-5 w-5 text-gray-600" />
+                    <span>Shop Products</span>
+                  </a>
+                  <a href="/courier-services" className="py-3 px-2 flex items-center space-x-3">
+                    <Truck className="h-5 w-5 text-gray-600" />
+                    <span>Courier Services</span>
+                  </a>
+                  <a href="/track-order" className="py-3 px-2 flex items-center space-x-3">
+                    <Package className="h-5 w-5 text-gray-600" />
+                    <span>Track Order</span>
+                  </a>
+                  <a href="/food-items" className="py-3 px-2 flex items-center space-x-3">
+                    <UtensilsCrossed className="h-5 w-5 text-gray-600" />
+                    <span>Food Items</span>
+                  </a>
+                  <a href="/decorative-items" className="py-3 px-2 flex items-center space-x-3">
+                    <Sparkles className="h-5 w-5 text-gray-600" />
+                    <span>Decorative Items</span>
+                  </a>
+                  <a href="/about-us" className="py-3 px-2 flex items-center space-x-3">
+                    <Info className="h-5 w-5 text-gray-600" />
+                    <span>About Us</span>
+                  </a>
                 </nav>
                 <DrawerFooter>
                   <div className="w-full">
