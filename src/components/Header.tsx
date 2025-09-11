@@ -105,12 +105,12 @@ const Header = () => {
 
             {/* Logo */}
             <div className="flex-1 flex items-center justify-center">
-              <div className="flex items-center space-x-2 cursor-pointer" onClick={handleLogoClick}>
-                <WalmartSpark className="h-6 w-6 text-yellow-500 hover:text-yellow-600 transition-colors" />
-                <div className="bg-white hover:bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full flex items-center space-x-1.5 transition-colors border border-gray-200">
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
+                <WalmartSpark className="h-8 w-8 text-yellow-500 hover:text-yellow-600 transition-colors" />
+                <div className="bg-white hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-full flex items-center space-x-1.5 transition-colors border border-gray-200">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-semibold leading-tight">Venkat Express</span>
-                    <span className="text-[8px] text-gray-500 leading-tight">Global Shipping</span>
+                    <span className="text-sm font-semibold leading-tight">Venkat Express</span>
+                    <span className="text-xs text-gray-500 leading-tight">Global Shipping</span>
                   </div>
                 </div>
               </div>

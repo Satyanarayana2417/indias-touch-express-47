@@ -218,7 +218,7 @@ const ShopProducts = () => {
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
             Shop Products
           </h1>
-          <p className="text-lg text-soft-gray max-w-2xl">
+          <p className="text-sm md:text-lg text-soft-gray max-w-2xl">
             Discover authentic Indian food products, spices, and specialty items. 
             All products are carefully sourced and quality guaranteed.
           </p>
