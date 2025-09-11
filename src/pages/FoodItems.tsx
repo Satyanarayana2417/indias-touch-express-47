@@ -59,8 +59,8 @@ const FoodItems = () => {
     {
       id: 202,
       name: "Organic Turmeric Powder (500g)",
-      price: "$16.99",
-      originalPrice: "$19.99",
+      price: "₹1,429",
+      originalPrice: "₹1,689",
       rating: 4.9,
       reviews: 342,
       image: featuredImage,
@@ -74,8 +74,8 @@ const FoodItems = () => {
     {
       id: 203,
       name: "Green Cardamom Pods (100g)",
-      price: "$32.99",
-      originalPrice: "$38.99",
+      price: "₹2,779",
+      originalPrice: "₹3,289",
       rating: 4.7,
       reviews: 189,
       image: featuredImage,
@@ -89,8 +89,8 @@ const FoodItems = () => {
     {
       id: 204,
       name: "Toor Dal (Split Pigeon Peas) - 2kg",
-      price: "$12.99",
-      originalPrice: "$15.99",
+      price: "₹1,099",
+      originalPrice: "₹1,349",
       rating: 4.6,
       reviews: 124,
       image: featuredImage,
@@ -104,8 +104,8 @@ const FoodItems = () => {
     {
       id: 205,
       name: "Cold Pressed Coconut Oil (500ml)",
-      price: "$18.99",
-      originalPrice: "$22.99",
+      price: "₹1,599",
+      originalPrice: "₹1,939",
       rating: 4.8,
       reviews: 203,
       image: featuredImage,
@@ -119,8 +119,8 @@ const FoodItems = () => {
     {
       id: 206,
       name: "Garam Masala Blend (200g)",
-      price: "$14.99",
-      originalPrice: "$17.99",
+      price: "₹1,259",
+      originalPrice: "₹1,519",
       rating: 4.9,
       reviews: 298,
       image: featuredImage,
@@ -227,7 +227,7 @@ const FoodItems = () => {
                     <div className="space-y-3">
                       <div className="p-3 bg-secondary/10 rounded-lg">
                         <p className="text-sm font-medium text-primary">Free Shipping</p>
-                        <p className="text-xs text-soft-gray">On orders over $50</p>
+                        <p className="text-xs text-soft-gray">On orders over ₹4,000</p>
                       </div>
                       <div className="p-3 bg-red-50 rounded-lg">
                         <p className="text-sm font-medium text-red-600">Limited Time</p>

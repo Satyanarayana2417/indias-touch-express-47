@@ -17,7 +17,7 @@ const CourierServices = () => {
       title: "You Give, We Ship",
       description: "Send your personal items from India to anywhere in the world",
       features: ["Pickup from your location", "Professional packaging", "Insurance available", "Real-time tracking"],
-      pricing: "Starting from $25"
+      pricing: "Starting from ₹2,100"
     },
     {
       icon: Truck,
@@ -31,7 +31,7 @@ const CourierServices = () => {
       title: "Express Shipping",
       description: "Fast and secure shipping for urgent deliveries",
       features: ["3-7 day delivery", "Premium packaging", "Full insurance", "Priority handling"],
-      pricing: "Starting from $45"
+      pricing: "Starting from ₹3,800"
     }
   ];
 

@@ -78,7 +78,7 @@ const TrackOrder = () => {
       weight: "2.5 kg",
       dimensions: "30x20x15 cm",
       contents: "Spices and Food Items",
-      value: "$89.99"
+      value: "₹7,579"
     },
     recipient: {
       name: "John Smith",

@@ -58,7 +58,7 @@ export const useSearch = () => {
       id: '4',
       name: 'Brass Diya Set',
       name_lowercase: 'brass diya set',
-      price: '$34.99',
+      price: '₹2,939',
       image: 'https://m.media-amazon.com/images/I/61eiR2QdMJL.jpg',
       category: 'decorative'
     },
@@ -66,7 +66,7 @@ export const useSearch = () => {
       id: '5',
       name: 'Black Mustard Seeds',
       name_lowercase: 'black mustard seeds',
-      price: '$6.99',
+      price: '₹589',
       image: 'https://5.imimg.com/data5/SELLER/Default/2021/4/GP/RY/LT/9876543/black-mustard-seeds-500x500.jpg',
       category: 'spices'
     },
@@ -75,7 +75,7 @@ export const useSearch = () => {
       id: '6',
       name: 'Cardamom Pods Green',
       name_lowercase: 'cardamom pods green',
-      price: '$24.99',
+      price: '₹2,099',
       image: 'https://media.istockphoto.com/id/1327578667/photo/cardamom-pods-isolated-on-white-background-top-view.jpg?s=612x612&w=0&k=20&c=Z4FXGWlmYi9qXTs26a4xsa2eZAzHDkdf_b_WFy_BnmI=',
       category: 'spices'
     },
@@ -83,7 +83,7 @@ export const useSearch = () => {
       id: '7',
       name: 'Cumin Seeds Whole',
       name_lowercase: 'cumin seeds whole',
-      price: '$12.99',
+      price: '₹1,099',
       image: 'https://www.shutterstock.com/image-photo/front-view-wooden-scoop-filled-600nw-2447634023.jpg',
       category: 'spices'
     },
@@ -91,7 +91,7 @@ export const useSearch = () => {
       id: '8',
       name: 'Coriander Powder',
       name_lowercase: 'coriander powder',
-      price: '$9.99',
+      price: '₹839',
       image: 'https://5.imimg.com/data5/SELLER/Default/2020/12/YS/DI/CX/8765432/coriander-powder-500x500.jpg',
       category: 'spices'
     },
@@ -108,7 +108,7 @@ export const useSearch = () => {
       id: '10',
       name: 'Garam Masala Premium',
       name_lowercase: 'garam masala premium',
-      price: '$18.99',
+      price: '₹1,599',
       image: 'https://png.pngtree.com/png-vector/20240810/ourmid/pngtree-authentic-garam-masala-powder-for-rich-indian-flavors-png-image_13440740.png',
       category: 'spices'
     },
@@ -133,7 +133,7 @@ export const useSearch = () => {
       id: '13',
       name: 'Haldi (Turmeric) Powder',
       name_lowercase: 'haldi (turmeric) powder',
-      price: '$12.99',
+      price: '₹1,099',
       image: 'https://media.istockphoto.com/id/1137344824/photo/turmeric-powder-and-roots-shot-from-above-on-white-background.jpg?s=612x612&w=0&k=20&c=f7q7ZkG-xp4ya1lLimbtdGj1hO5jafG46KEO3cRSsIA=',
       category: 'spices'
     },
@@ -141,7 +141,7 @@ export const useSearch = () => {
       id: '14',
       name: 'Honey Pure Raw',
       name_lowercase: 'honey pure raw',
-      price: '$16.99',
+      price: '₹1,429',
       image: 'https://5.imimg.com/data5/SELLER/Default/2021/8/HK/LM/NO/1234567/raw-honey-500x500.jpg',
       category: 'natural'
     },
@@ -158,7 +158,7 @@ export const useSearch = () => {
       id: '16',
       name: 'Jeera (Cumin) Powder',
       name_lowercase: 'jeera (cumin) powder',
-      price: '$11.99',
+      price: '₹1,009',
       image: 'https://5.imimg.com/data5/SELLER/Default/2020/11/AB/CD/EF/9876543/cumin-powder-500x500.jpg',
       category: 'spices'
     },
@@ -201,7 +201,7 @@ export const useSearch = () => {
       id: '21',
       name: 'Turmeric Powder Organic',
       name_lowercase: 'turmeric powder organic',
-      price: '$12.99',
+      price: '₹1,099',
       image: 'https://m.media-amazon.com/images/I/616TtvR-zQS._UF350,350_QL80_.jpg',
       category: 'spices'
     },
@@ -218,7 +218,7 @@ export const useSearch = () => {
       id: '23',
       name: 'Wooden Elephant Figurine',
       name_lowercase: 'wooden elephant figurine',
-      price: '$28.99',
+      price: '₹2,439',
       image: 'https://media.istockphoto.com/id/1129684071/photo/elephant-mother-and-baby-figurine.jpg?s=612x612&w=0&k=20&c=1xV50ZIJjo6ufDuTx_TMh25emQFuICXLtGu6NKnPnWc=',
       category: 'decorative'
     },
