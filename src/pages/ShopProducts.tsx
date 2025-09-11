@@ -215,13 +215,9 @@ const ShopProducts = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
+          <h1 className="text-2xl md:text-4xl font-serif font-bold text-primary mb-4">
             Shop Products
           </h1>
-          <p className="text-sm md:text-lg text-soft-gray max-w-2xl">
-            Discover authentic Indian food products, spices, and specialty items. 
-            All products are carefully sourced and quality guaranteed.
-          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
