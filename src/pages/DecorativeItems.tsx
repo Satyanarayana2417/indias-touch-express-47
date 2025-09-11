@@ -1,15 +1,34 @@
 import { useState } from "react";
 import { Search, Filter, Star, ShoppingCart, Heart, Sparkles, Palette } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCart } from "@/context/CartContext";
+import { toast } from "@/hooks/use-toast";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const DecorativeItems = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
+  const handleAddToCart = (product: any) => {
+    addItem(product.id, product.name, product.price, product.image);
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+    // Navigate to cart page after adding item
+    navigate('/cart');
+  };
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
 
   const categories = [
     { id: "all", name: "All Decorative Items", count: 67 },
@@ -22,7 +41,7 @@ const DecorativeItems = () => {
 
   const decorativeProducts = [
     {
-      id: 1,
+      id: 301,
       name: "Handcrafted Brass Diya Set (12 pieces)",
       price: "$34.99",
       originalPrice: "$42.99",
@@ -37,7 +56,7 @@ const DecorativeItems = () => {
       inStock: true
     },
     {
-      id: 2,
+      id: 302,
       name: "Kashmiri Pashmina Shawl",
       price: "$89.99",
       originalPrice: "$120.99",
@@ -52,7 +71,7 @@ const DecorativeItems = () => {
       inStock: true
     },
     {
-      id: 3,
+      id: 303,
       name: "Blue Pottery Vase with Floral Design",
       price: "$45.99",
       originalPrice: "$55.99",
@@ -67,7 +86,7 @@ const DecorativeItems = () => {
       inStock: true
     },
     {
-      id: 4,
+      id: 304,
       name: "Carved Wooden Elephant Pair",
       price: "$67.99",
       originalPrice: "$79.99",
@@ -82,7 +101,7 @@ const DecorativeItems = () => {
       inStock: false
     },
     {
-      id: 5,
+      id: 305,
       name: "Kundan Traditional Necklace Set",
       price: "$124.99",
       originalPrice: "$149.99",
@@ -97,7 +116,7 @@ const DecorativeItems = () => {
       inStock: true
     },
     {
-      id: 6,
+      id: 306,
       name: "Mandala Wall Hanging Tapestry",
       price: "$28.99",
       originalPrice: "$35.99",
@@ -259,7 +278,8 @@ const DecorativeItems = () => {
                   {filteredProducts.map((product) => (
                     <Card 
                       key={product.id} 
-                      className="group relative overflow-hidden border hover:shadow-luxury transition-all duration-300 hover:-translate-y-1"
+                      className="group relative overflow-hidden border hover:shadow-luxury transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                      onClick={() => handleProductClick(product.id)}
                     >
                       <CardContent className="p-0">
                         {/* Product Image */}
@@ -291,6 +311,7 @@ const DecorativeItems = () => {
                             size="sm"
                             variant="ghost"
                             className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-soft-gray hover:text-red-500 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <Heart className="h-4 w-4" />
                           </Button>
@@ -301,6 +322,10 @@ const DecorativeItems = () => {
                               <Button 
                                 size="sm" 
                                 className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
                               >
                                 <ShoppingCart className="h-4 w-4 mr-2" />
                                 Add to Cart

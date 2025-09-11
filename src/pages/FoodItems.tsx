@@ -1,15 +1,34 @@
 import { useState } from "react";
 import { Search, Filter, Star, ShoppingCart, Heart, Leaf, Award } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCart } from "@/context/CartContext";
+import { toast } from "@/hooks/use-toast";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const FoodItems = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
+  const handleAddToCart = (product: any) => {
+    addItem(product.id, product.name, product.price, product.image);
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+    // Navigate to cart page after adding item
+    navigate('/cart');
+  };
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
 
   const categories = [
     { id: "all", name: "All Food Items", count: 89 },
@@ -23,10 +42,10 @@ const FoodItems = () => {
 
   const foodProducts = [
     {
-      id: 1,
+      id: 201,
       name: "Premium Basmati Rice (5kg)",
-      price: "$24.99",
-      originalPrice: "$29.99",
+      price: "₹1,999",
+      originalPrice: "₹2,399",
       rating: 4.8,
       reviews: 256,
       image: featuredImage,
@@ -38,7 +57,7 @@ const FoodItems = () => {
       inStock: true
     },
     {
-      id: 2,
+      id: 202,
       name: "Organic Turmeric Powder (500g)",
       price: "$16.99",
       originalPrice: "$19.99",
@@ -53,7 +72,7 @@ const FoodItems = () => {
       inStock: true
     },
     {
-      id: 3,
+      id: 203,
       name: "Green Cardamom Pods (100g)",
       price: "$32.99",
       originalPrice: "$38.99",
@@ -68,7 +87,7 @@ const FoodItems = () => {
       inStock: true
     },
     {
-      id: 4,
+      id: 204,
       name: "Toor Dal (Split Pigeon Peas) - 2kg",
       price: "$12.99",
       originalPrice: "$15.99",
@@ -83,7 +102,7 @@ const FoodItems = () => {
       inStock: true
     },
     {
-      id: 5,
+      id: 205,
       name: "Cold Pressed Coconut Oil (500ml)",
       price: "$18.99",
       originalPrice: "$22.99",
@@ -98,7 +117,7 @@ const FoodItems = () => {
       inStock: false
     },
     {
-      id: 6,
+      id: 206,
       name: "Garam Masala Blend (200g)",
       price: "$14.99",
       originalPrice: "$17.99",
@@ -256,7 +275,8 @@ const FoodItems = () => {
                   {filteredProducts.map((product) => (
                     <Card 
                       key={product.id} 
-                      className="group relative overflow-hidden border hover:shadow-luxury transition-all duration-300 hover:-translate-y-1"
+                      className="group relative overflow-hidden border hover:shadow-luxury transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                      onClick={() => handleProductClick(product.id)}
                     >
                       <CardContent className="p-0">
                         {/* Product Image */}
@@ -288,6 +308,7 @@ const FoodItems = () => {
                             size="sm"
                             variant="ghost"
                             className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-soft-gray hover:text-red-500 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <Heart className="h-4 w-4" />
                           </Button>
@@ -298,6 +319,10 @@ const FoodItems = () => {
                               <Button 
                                 size="sm" 
                                 className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
                               >
                                 <ShoppingCart className="h-4 w-4 mr-2" />
                                 Add to Cart
