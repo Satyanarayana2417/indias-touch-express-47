@@ -67,7 +67,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
       {/* Mobile Header */}
       <div className="md:hidden">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 pt-4">
           {/* Mobile Top Bar */}
           <div className="flex items-center justify-between h-12">
             {/* Drawer / Hamburger */}
