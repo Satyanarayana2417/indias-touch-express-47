@@ -46,8 +46,8 @@ const HowItWorks = () => {
             const Icon = step.icon;
             return (
               <div key={index} className="relative text-center group">
-                {/* Step Number */}
-                <div className="absolute -top-4 -right-4 w-12 h-12 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center font-bold text-lg z-10">
+                {/* Step Number - Above Icon */}
+                <div className="mx-auto w-12 h-12 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center font-bold text-lg mb-4">
                   {step.step}
                 </div>
 
@@ -68,7 +68,7 @@ const HowItWorks = () => {
 
                 {/* Connecting Line (hidden on last item) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-10 -right-4 w-8 h-0.5 bg-primary-foreground/20"></div>
+                  <div className="hidden lg:block absolute top-16 -right-4 w-8 h-0.5 bg-primary-foreground/20"></div>
                 )}
               </div>
             );
