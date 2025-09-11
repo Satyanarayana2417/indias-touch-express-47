@@ -51,6 +51,7 @@ const HowItWorks = () => {
                   {step.step}
                 </div>
 
+
                 {/* Icon Container */}
                 <div className="relative mx-auto w-20 h-20 bg-primary-foreground/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors duration-300">
                   <Icon className="h-10 w-10 text-secondary" />
