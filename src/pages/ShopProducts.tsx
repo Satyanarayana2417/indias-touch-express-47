@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 import { toast } from "@/hooks/use-toast";
 import featuredImage from "@/assets/featured-products.jpg";
 
@@ -18,17 +21,39 @@ const ShopProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   const handleAddToCart = (product: any) => {
-    addItem(product.id, product.name, product.price, product.image);
+    addItem(String(product.id), product.name, product.price, product.image);
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
     });
     // Navigate to cart page after adding item
     navigate('/cart');
+  };
+
+  const handleWishlistToggle = async (e: React.MouseEvent, productId: number) => {
+    e.stopPropagation();
+    
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    await toggleWishlist(productId.toString());
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
+    toast({
+      title: "Welcome!",
+      description: "You can now save items to your wishlist.",
+    });
   };
 
   const handleProductClick = (productId: number) => {
@@ -209,7 +234,7 @@ const ShopProducts = () => {
     : products.filter(product => product.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -562,9 +587,15 @@ const ShopProducts = () => {
                       <div className="relative overflow-hidden bg-gray-50">
                         <button 
                           className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => handleWishlistToggle(e, product.id)}
                         >
-                          <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
+                          <Heart 
+                            className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+                              isInWishlist(product.id.toString()) 
+                                ? 'text-red-500 fill-red-500' 
+                                : 'text-gray-600 hover:text-red-500'
+                            }`} 
+                          />
                         </button>
                         {/* Badge */}
                         {product.badge && (
@@ -641,8 +672,15 @@ const ShopProducts = () => {
                             size="sm"
                             variant="ghost"
                             className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-gray-600 hover:text-red-500 transition-colors"
+                            onClick={(e) => handleWishlistToggle(e, product.id)}
                           >
-                            <Heart className="h-4 w-4" />
+                            <Heart 
+                              className={`h-4 w-4 transition-colors ${
+                                isInWishlist(product.id.toString()) 
+                                  ? 'text-red-500 fill-red-500' 
+                                  : 'text-gray-600 hover:text-red-500'
+                              }`} 
+                            />
                           </Button>
                         </div>
 
@@ -721,6 +759,12 @@ const ShopProducts = () => {
       </main>
 
       <Footer />
+      
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };

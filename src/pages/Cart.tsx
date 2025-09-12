@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Heart, Truck, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useWishlist } from '@/context/WishlistContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -13,14 +16,29 @@ const Cart = () => {
   const navigate = useNavigate();
   const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
   const { currentUser } = useAuth();
+  const { addToWishlist } = useWishlist();
 
   const subtotal = getTotalPrice();
   const shipping = 0; // Free shipping or calculated at checkout
   const total = subtotal + shipping;
 
-  const handleQuantityChange = (id: string, newQuantity: number) => {
+  const handleQuantityChange = (id: string, newQuantity: number, variant?: string) => {
     if (newQuantity >= 1) {
-      updateQuantity(id, newQuantity);
+      updateQuantity(id, newQuantity, variant);
+    }
+  };
+
+  const handleRemoveItem = (id: string, variant?: string) => {
+    removeItem(id, variant);
+  };
+
+  const handleSaveForLater = async (id: string, variant?: string) => {
+    try {
+      await addToWishlist(id);
+      // Remove from cart after successfully adding to wishlist
+      removeItem(id, variant);
+    } catch (error) {
+      console.error('Error saving item for later:', error);
     }
   };
 
@@ -76,10 +94,11 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+        {/* Cart Header - Hidden on Mobile */}
+        <div className="mb-8 hidden md:block">
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
             <p className="text-gray-600">
@@ -93,9 +112,122 @@ const Cart = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Cart Items - Left Column */}
+          {/* Cart Items - Full width on mobile, left column on desktop */}
           <div className="lg:col-span-8">
-            <Card>
+            {/* Mobile Cart Items */}
+            <div className="md:hidden space-y-4">
+              {items.map((item, index) => (
+                <Card key={item.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      {/* Product Image */}
+                      <div className="flex-shrink-0">
+                        <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder.svg';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                              <ShoppingBag className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Product Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-base font-semibold text-gray-900 leading-tight">
+                              {item.name}
+                            </h3>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 ml-2"
+                              onClick={() => handleRemoveItem(item.id, item.variant)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          {/* Price and Discount */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-primary">
+                              {item.price}
+                            </span>
+                            {/* Mock discount badge - can be made dynamic */}
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                              <Tag className="w-3 h-3 mr-1" />
+                              10% OFF
+                            </Badge>
+                          </div>
+
+                          {/* Delivery Info */}
+                          <div className="flex items-center gap-1 text-sm text-green-600">
+                            <Truck className="w-4 h-4" />
+                            <span>Free delivery by tomorrow</span>
+                          </div>
+
+                          {/* Quantity and Actions */}
+                          <div className="flex items-center justify-between pt-2">
+                            {/* Quantity Dropdown */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">Qty:</span>
+                              <Select 
+                                value={item.quantity.toString()} 
+                                onValueChange={(value) => handleQuantityChange(item.id, parseInt(value), item.variant)}
+                              >
+                                <SelectTrigger className="w-16 h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                                    <SelectItem key={num} value={num.toString()}>
+                                      {num}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Item Total */}
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-gray-900">
+                                {formatPrice(parsePrice(item.price) * item.quantity)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-sm"
+                              onClick={() => handleSaveForLater(item.id, item.variant)}
+                            >
+                              <Heart className="w-4 h-4 mr-1" />
+                              Save for Later
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Desktop Cart Items */}
+            <Card className="hidden md:block">
               <CardContent className="p-0">
                 {/* Scrollable container for large item lists */}
                 <div className="max-h-[80vh] overflow-y-auto">
@@ -144,7 +276,7 @@ const Cart = () => {
                                   variant="ghost"
                                   size="sm"
                                   className="h-9 w-9 p-0 hover:bg-gray-100"
-                                  onClick={() => handleQuantityChange(String(item.id), item.quantity - 1)}
+                                  onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.variant)}
                                   disabled={item.quantity <= 1}
                                 >
                                   <Minus className="h-4 w-4" />
@@ -156,7 +288,7 @@ const Cart = () => {
                                   variant="ghost"
                                   size="sm"
                                   className="h-9 w-9 p-0 hover:bg-gray-100"
-                                  onClick={() => handleQuantityChange(String(item.id), item.quantity + 1)}
+                                  onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.variant)}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>
@@ -174,7 +306,7 @@ const Cart = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
-                                onClick={() => removeItem(String(item.id))}
+                                onClick={() => handleRemoveItem(item.id, item.variant)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -190,8 +322,8 @@ const Cart = () => {
             </Card>
           </div>
 
-          {/* Order Summary - Right Column */}
-          <div className="lg:col-span-4">
+          {/* Order Summary - Right Column (Desktop Only) */}
+          <div className="lg:col-span-4 hidden md:block">
             <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle className="text-xl font-bold">Order Summary</CardTitle>
@@ -244,6 +376,27 @@ const Cart = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Mobile Sticky Footer */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500 line-through">
+                ₹{Math.round(total * 1.2).toLocaleString('en-IN')}
+              </span>
+              <span className="text-2xl font-bold text-gray-900">
+                ₹{Math.round(total).toLocaleString('en-IN')}
+              </span>
+            </div>
+            <Button 
+              onClick={handleCheckout}
+              className="bg-yellow-400 hover:bg-yellow-500 text-black py-3 px-8 text-lg font-semibold rounded-lg"
+              size="lg"
+            >
+              Place Order
+            </Button>
           </div>
         </div>
       </div>

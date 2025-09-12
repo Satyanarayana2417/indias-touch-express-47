@@ -8,22 +8,47 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 import { toast } from "@/hooks/use-toast";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const DecorativeItems = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
   const handleAddToCart = (product: any) => {
-    addItem(product.id, product.name, product.price, product.image);
+    addItem(String(product.id), product.name, product.price, product.image);
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
     });
     // Navigate to cart page after adding item
     navigate('/cart');
+  };
+
+  const handleWishlistToggle = async (e: React.MouseEvent, productId: number) => {
+    e.stopPropagation();
+    
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    await toggleWishlist(productId.toString());
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
+    toast({
+      title: "Welcome!",
+      description: "You can now save items to your wishlist.",
+    });
   };
 
   const handleProductClick = (productId: number) => {
@@ -311,9 +336,15 @@ const DecorativeItems = () => {
                             size="sm"
                             variant="ghost"
                             className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-soft-gray hover:text-red-500 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => handleWishlistToggle(e, product.id)}
                           >
-                            <Heart className="h-4 w-4" />
+                            <Heart 
+                              className={`h-4 w-4 transition-colors ${
+                                isInWishlist(product.id.toString()) 
+                                  ? 'text-red-500 fill-red-500' 
+                                  : 'text-soft-gray hover:text-red-500'
+                              }`} 
+                            />
                           </Button>
 
                           {/* Quick Add to Cart */}
@@ -440,6 +471,12 @@ const DecorativeItems = () => {
       </main>
 
       <Footer />
+      
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };

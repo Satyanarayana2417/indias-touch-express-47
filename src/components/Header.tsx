@@ -1,18 +1,14 @@
-import { Search, User, ShoppingCart, Menu, MapPin, Package, ChevronDown, Globe, Heart, Home, Store, Truck, UtensilsCrossed, Sparkles, Info } from "lucide-react";
+import { Search, User, ShoppingCart, MapPin, Package, ChevronDown, Globe, Heart, UtensilsCrossed, Sparkles, Truck } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-  DrawerFooter,
-} from "@/components/ui/drawer";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
+import { useLocation as useUserLocation } from "@/context/LocationContext";
 import { SearchBar } from "@/components/SearchBar";
+import AddressModal from "@/components/AddressModal";
 
 // Function to scroll to hero section
 const scrollToHero = () => {
@@ -42,8 +38,48 @@ const WalmartSpark = ({ className = "h-4 w-4", onClick }: { className?: string; 
 
 const Header = () => {
   const { getTotalItems, getTotalPrice } = useCart();
+  const { wishlist } = useWishlist();
+  const { currentUser, logout } = useAuth();
+  const { userLocation, isLocationSet } = useUserLocation();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Scroll state for hiding/showing quick nav
+  const [isQuickNavVisible, setIsQuickNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  
+  // Address modal state
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px
+        setIsQuickNavVisible(false);
+      } else {
+        // Scrolling up or at top
+        setIsQuickNavVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+  
+  const handleAuthButtonClick = () => {
+    if (currentUser) {
+      logout();
+    } else {
+      navigate('/login');
+    }
+  };
   
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -64,121 +100,102 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
-      {/* Mobile Header */}
-      <div className="md:hidden">
-        <div className="container mx-auto px-4 pt-4">
-          {/* Mobile Top Bar */}
-          <div className="flex items-center justify-between h-12">
-            {/* Drawer / Hamburger */}
-            <Drawer>
-              <DrawerTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle 
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={handleLogoClick}
-                  >
-                    Venkat Express
-                  </DrawerTitle>
-                </DrawerHeader>
-                <nav className="flex flex-col divide-y py-2 text-base">
-                  <a href="/" className="py-3 px-2 flex items-center space-x-3">
-                    <Home className="h-5 w-5 text-gray-600" />
-                    <span>Home</span>
-                  </a>
-                  <a href="/shop-products" className="py-3 px-2 flex items-center space-x-3">
-                    <Store className="h-5 w-5 text-gray-600" />
-                    <span>Shop Products</span>
-                  </a>
-                  <a href="/courier-services" className="py-3 px-2 flex items-center space-x-3">
-                    <Truck className="h-5 w-5 text-gray-600" />
-                    <span>Courier Services</span>
-                  </a>
-                  <a href="/track-order" className="py-3 px-2 flex items-center space-x-3">
-                    <Package className="h-5 w-5 text-gray-600" />
-                    <span>Track Order</span>
-                  </a>
-                  <a href="/food-items" className="py-3 px-2 flex items-center space-x-3">
-                    <UtensilsCrossed className="h-5 w-5 text-gray-600" />
-                    <span>Food Items</span>
-                  </a>
-                  <a href="/decorative-items" className="py-3 px-2 flex items-center space-x-3">
-                    <Sparkles className="h-5 w-5 text-gray-600" />
-                    <span>Decorative Items</span>
-                  </a>
-                  <a href="/about-us" className="py-3 px-2 flex items-center space-x-3">
-                    <Info className="h-5 w-5 text-gray-600" />
-                    <span>About Us</span>
-                  </a>
-                </nav>
-                <DrawerFooter>
-                  <div className="w-full">
-                    <Button size="default" className="w-full">Get Quote</Button>
-                  </div>
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
-
-            {/* Logo */}
-            <div className="flex-1 flex items-center justify-center">
-              <div className="flex items-center space-x-3 cursor-pointer" onClick={handleLogoClick}>
-                <WalmartSpark className="h-8 w-8 text-yellow-500 hover:text-yellow-600 transition-colors" />
-                <div className="bg-white hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-full flex items-center space-x-1.5 transition-colors border border-gray-200">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold leading-tight">Venkat Express</span>
-                    <span className="text-xs text-gray-500 leading-tight">Global Shipping</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Cart */}
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative" 
-                aria-label="View cart"
-                onClick={() => navigate('/cart')}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                {getTotalItems() > 0 && (
-                  <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-xs font-medium flex items-center justify-center text-white">
-                    {getTotalItems()}
-                  </span>
-                )}
-              </Button>
+    <>
+    {/* Mobile Header - Scrolls with content */}
+    <div className="md:hidden bg-white border-b shadow-sm">
+      {/* Quick Navigation Bar - Mobile Only */}
+      <div className="mx-4 py-4 px-2 mb-3 mt-4">
+        <div className="flex justify-around items-center">
+          {/* Brand Icon */}
+          <div 
+            className="flex flex-col items-center cursor-pointer"
+            onClick={() => navigate('/')}
+          >
+            <div className="w-16 h-12 bg-yellow-400 rounded-lg flex items-center justify-center shadow-md">
+              <WalmartSpark className="h-8 w-8 text-white" />
             </div>
           </div>
 
-          {/* Mobile Search (compact) */}
-          <div className="pb-2 pt-2">
-            <div className="px-2">
-              <SearchBar
-                placeholder="Search products"
-                isMobile={true}
-              />
+          {/* Food Icon */}
+          <div 
+            className="flex flex-col items-center cursor-pointer"
+            onClick={() => navigate('/food-items')}
+          >
+            <div className="w-16 h-12 bg-white rounded-lg flex items-center justify-center shadow-md">
+              <UtensilsCrossed className="h-8 w-8 text-orange-600" />
             </div>
           </div>
 
-          {/* Category Filters - Mobile only (horizontal pill scroll) */}
-          <div className="pb-3">
-            <div className="overflow-x-auto px-2">
-              <div className="flex space-x-3 items-center py-2">
-                <a href="/shop-products" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Shop Products</a>
-                <a href="/courier-services" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Courier Services</a>
-                <a href="/new-arrivals" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">New Arrivals</a>
-                <a href="/food-items" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Food Items</a>
-                <a href="/decorative-items" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Decorative Items</a>
-              </div>
+          {/* Decor Icon */}
+          <div 
+            className="flex flex-col items-center cursor-pointer"
+            onClick={() => navigate('/decorative-items')}
+          >
+            <div className="w-16 h-12 bg-white rounded-lg flex items-center justify-center shadow-md">
+              <Sparkles className="h-8 w-8 text-pink-600" />
+            </div>
+          </div>
+
+          {/* Courier Icon */}
+          <div 
+            className="flex flex-col items-center cursor-pointer"
+            onClick={() => navigate('/courier-services')}
+          >
+            <div className="w-16 h-12 bg-white rounded-lg flex items-center justify-center shadow-md">
+              <Truck className="h-8 w-8 text-blue-600" />
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Location Display - Mobile Only */}
+      {isLocationSet && (
+        <div 
+          className="bg-white border border-gray-200 px-4 py-2 mx-4 mb-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setIsAddressModalOpen(true)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-4 w-4 text-gray-500" />
+              <span className="text-sm text-gray-600 font-medium truncate">
+                📍 {userLocation?.city}{userLocation?.state ? `, ${userLocation.state}` : ''}
+              </span>
+            </div>
+            <ChevronDown className="h-4 w-4 text-gray-500 transform rotate-90" />
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Search & Categories - Scrolls with quick nav */}
+      <div className="container mx-auto px-4">
+        {/* Mobile Search (compact) */}
+        <div className="pb-2 pt-2">
+          <div className="px-2">
+            <SearchBar
+              placeholder="Search products"
+              isMobile={true}
+            />
+          </div>
+        </div>
+
+        {/* Category Filters - Mobile only (horizontal pill scroll) */}
+        <div className="pb-3">
+          <div className="overflow-x-auto px-2 scrollbar-hide">
+            <div className="flex space-x-3 items-center py-2">
+              <a href="/shop-products" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Shop Products</a>
+              <a href="/courier-services" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Courier Services</a>
+              <a href="/new-arrivals" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">New Arrivals</a>
+              <a href="/food-items" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Food Items</a>
+              <a href="/decorative-items" className="flex-shrink-0 bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border">Decorative Items</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <header className="sticky top-0 z-30 bg-white border-b shadow-sm">
+      {/* Mobile Header - Hidden since content moved above */}
+      <div className="md:hidden hidden">
       </div>
 
       {/* Desktop Header - Walmart Style */}
@@ -193,8 +210,15 @@ const Header = () => {
                 {/* New Interactive Brand Component */}
                 <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-full flex items-center space-x-4 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 border border-gray-200 min-w-[250px] h-12">
                   <div className="flex flex-col text-left min-w-0">
-                    <span className="text-sm font-bold text-gray-700 leading-tight">Shipping From:</span>
-                    <span className="text-xs text-gray-500 leading-tight truncate">Hyderabad, Telangana • India</span>
+                    <span className="text-sm font-bold text-gray-700 leading-tight">
+                      {isLocationSet ? 'Your Location:' : 'Shipping From:'}
+                    </span>
+                    <span className="text-xs text-gray-500 leading-tight truncate">
+                      {isLocationSet 
+                        ? `${userLocation?.city}${userLocation?.state ? `, ${userLocation.state}` : ''}${userLocation?.country ? ` • ${userLocation.country}` : ''}`
+                        : 'Hyderabad, Telangana • India'
+                      }
+                    </span>
                   </div>
                   <ChevronDown className="h-4 w-4 text-gray-500 flex-shrink-0" />
                 </button>
@@ -211,20 +235,36 @@ const Header = () => {
 
             {/* Right Section: User Actions */}
             <div className="flex items-center space-x-10">
-              <a href="/track-order" className="flex flex-col items-center text-xs hover:text-primary transition-colors">
+              <button 
+                onClick={() => navigate('/track-order')} 
+                className="flex flex-col items-center text-xs hover:text-primary transition-colors"
+              >
                 <Package className="h-5 w-5 mb-1" />
                 <span>Track Order</span>
-              </a>
+              </button>
               
-              <a href="/wishlist" className="flex flex-col items-center text-xs hover:text-primary transition-colors">
-                <Heart className="h-5 w-5 mb-1" />
+              <button 
+                onClick={() => navigate('/wishlist')} 
+                className="flex flex-col items-center text-xs hover:text-primary transition-colors relative"
+              >
+                <div className="relative">
+                  <Heart className="h-5 w-5 mb-1" />
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </div>
                 <span>Wishlist</span>
-              </a>
+              </button>
               
-              <a href="/account" className="flex flex-col items-center text-xs hover:text-primary transition-colors">
+              <button 
+                onClick={handleAuthButtonClick}
+                className="flex flex-col items-center text-xs hover:text-primary transition-colors"
+              >
                 <User className="h-5 w-5 mb-1" />
-                <span>Sign In & Account</span>
-              </a>
+                <span>{currentUser ? `Hi, ${currentUser.displayName || currentUser.email?.split('@')[0]}` : 'Sign In & Account'}</span>
+              </button>
               
               <button 
                 onClick={() => navigate('/cart')}
@@ -289,6 +329,17 @@ const Header = () => {
         </div>
       </div>
     </header>
+    
+    {/* Address Modal - Mobile Only */}
+    <AddressModal
+      isOpen={isAddressModalOpen}
+      onClose={() => setIsAddressModalOpen(false)}
+      onAddressSelect={(address) => {
+        console.log('Selected address:', address);
+        // Address selection is handled inside the modal
+      }}
+    />
+    </>
   );
 };
 

@@ -35,7 +35,7 @@ const Index = () => {
   }, [location.state]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20 md:pb-0">
       <Header />
       <main>
         <GridHero />
