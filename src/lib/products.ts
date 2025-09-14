@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   collection, 
   addDoc, 
   getDocs, 
@@ -13,7 +13,7 @@ import {
   QueryDocumentSnapshot,
   DocumentData
 } from 'firebase/firestore';
-import { db, hasValidConfig } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 
 export interface ProductVariant {
   name: string;
@@ -115,12 +115,6 @@ export const getAllProducts = async (): Promise<Product[]> => {
 
 // Get a single product by ID
 export const getProductById = async (productId: string): Promise<Product | null> => {
-  // If no valid Firebase config, return null to use mock data
-  if (!hasValidConfig) {
-    console.log('Using mock data - Firebase not configured');
-    return null;
-  }
-
   try {
     const docRef = doc(db, COLLECTION_NAME, productId);
     const docSnap = await getDoc(docRef);
@@ -139,12 +133,6 @@ export const getProductById = async (productId: string): Promise<Product | null>
 
 // Search products by name (starts with)
 export const searchProducts = async (searchTerm: string, maxResults: number = 6): Promise<Product[]> => {
-  // If no valid Firebase config, return empty array to use mock data
-  if (!hasValidConfig) {
-    console.log('Using mock data - Firebase not configured');
-    return [];
-  }
-
   try {
     const normalizedTerm = normalizeProductName(searchTerm);
     
@@ -172,12 +160,6 @@ export const searchProducts = async (searchTerm: string, maxResults: number = 6)
 
 // Search products by category
 export const getProductsByCategory = async (category: string, maxResults: number = 20): Promise<Product[]> => {
-  // If no valid Firebase config, return empty array to use mock data
-  if (!hasValidConfig) {
-    console.log('Using mock data - Firebase not configured');
-    return [];
-  }
-
   try {
     const q = query(
       collection(db, COLLECTION_NAME),

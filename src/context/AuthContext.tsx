@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { createUserDocument, mockUserOperations } from '@/lib/users';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -92,10 +93,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         email: mockUser.email,
         displayName: mockUser.displayName
       }));
+      
+      // Create mock user document using the users library
+      await mockUserOperations.createUserDocument(mockUser);
       return;
     }
     
-    await createUserWithEmailAndPassword(auth, email, password);
+    // Create user in Firebase Authentication
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Create user document in Firestore 'users' collection using the users library
+    try {
+      await createUserDocument(user);
+    } catch (firestoreError) {
+      console.error('Error creating user document in Firestore:', firestoreError);
+      // Note: We don't throw here to avoid breaking the auth flow if Firestore fails
+      // The user is still authenticated, but their profile data won't be saved
+    }
   };
 
   const logout = async () => {
@@ -103,9 +118,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setCurrentUser(null);
       // Remove user from localStorage for development mode
       localStorage.removeItem('mockUser');
+      // Clear local cart data on logout
+      localStorage.removeItem('cartItems_v1');
       return;
     }
     
+    // Clear local cart data on logout
+    localStorage.removeItem('cartItems_v1');
     await signOut(auth);
   };
 

@@ -91,7 +91,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           onKeyDown={handleKeyDown}
           className={`
             ${isMobile 
-              ? "pl-3 pr-10 h-9 rounded-full w-full" 
+              ? "pl-3 pr-10 h-9 rounded-full w-full bg-white border-0 text-gray-700 placeholder-gray-500 text-sm" 
               : "w-full h-12 pl-4 pr-24 text-base border-2 border-gray-300 rounded-full focus:border-primary transition-colors"
             }
             ${isOpen ? 'rounded-b-none' : ''}
@@ -114,7 +114,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         {/* Search button */}
         {isMobile ? (
           <Search 
-            className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer" 
+            className="absolute right-3 top-2 h-4 w-4 text-gray-400 cursor-pointer" 
             onClick={handleSearchClick}
           />
         ) : (

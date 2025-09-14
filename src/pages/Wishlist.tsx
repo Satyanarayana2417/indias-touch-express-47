@@ -1,27 +1,17 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart, Trash2, ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "@/hooks/use-toast";
 
 const Wishlist = () => {
-  const { currentUser } = useAuth();
   const { wishlistProducts, loading, removeFromWishlist, clearWishlist } = useWishlist();
   const { addItem } = useCart();
   const navigate = useNavigate();
-
-  // Redirect to login if user is not authenticated
-  useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-    }
-  }, [currentUser, navigate]);
 
   const handleAddToCart = (product: any) => {
     addItem(product.id, product.name, product.price, product.image);
@@ -46,10 +36,6 @@ const Wishlist = () => {
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
   };
-
-  if (!currentUser) {
-    return null; // Will redirect in useEffect
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">

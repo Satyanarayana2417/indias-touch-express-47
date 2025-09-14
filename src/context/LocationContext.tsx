@@ -1,116 +1,29 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-interface LocationData {
+// Public type for richer location data used by modals/components
+export interface LocationData {
   city: string;
   state: string;
   country: string;
 }
 
 interface LocationContextType {
+  // Existing simple location/address strings still used by Header & other components
+  selectedLocation: string;
+  setSelectedLocation: (location: string) => void;
+  deliveryAddress: string;
+  setDeliveryAddress: (address: string) => void;
+  // Rich location object (city/state/country)
   userLocation: LocationData | null;
-  setUserLocation: (location: LocationData | null, storageType?: 'localStorage' | 'sessionStorage') => void;
-  isLocationSet: boolean;
+  setUserLocation: (location: LocationData, storage: 'localStorage' | 'sessionStorage') => void;
+  // Modal session flag
   hasShownModal: boolean;
   setHasShownModal: (shown: boolean) => void;
-  clearLocation: () => void;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
-interface LocationProviderProps {
-  children: ReactNode;
-}
-
-export const LocationProvider = ({ children }: LocationProviderProps) => {
-  const [userLocation, setUserLocationState] = useState<LocationData | null>(null);
-  const [hasShownModal, setHasShownModalState] = useState(false);
-
-  // Initialize location from storage on mount
-  useEffect(() => {
-    // Check sessionStorage first (for modal shown flag)
-    const modalShown = sessionStorage.getItem('locationModalShown');
-    if (modalShown === 'true') {
-      setHasShownModalState(true);
-    }
-
-    // Check for saved location (localStorage first, then sessionStorage)
-    const savedLocationLocal = localStorage.getItem('userLocation');
-    const savedLocationSession = sessionStorage.getItem('userLocation');
-    
-    if (savedLocationLocal) {
-      try {
-        const location = JSON.parse(savedLocationLocal);
-        setUserLocationState(location);
-      } catch (error) {
-        console.error('Error parsing saved location from localStorage:', error);
-        localStorage.removeItem('userLocation');
-      }
-    } else if (savedLocationSession) {
-      try {
-        const location = JSON.parse(savedLocationSession);
-        setUserLocationState(location);
-      } catch (error) {
-        console.error('Error parsing saved location from sessionStorage:', error);
-        sessionStorage.removeItem('userLocation');
-      }
-    }
-  }, []);
-
-  const setUserLocation = (location: LocationData | null, storageType: 'localStorage' | 'sessionStorage' = 'localStorage') => {
-    setUserLocationState(location);
-    
-    if (location) {
-      const locationString = JSON.stringify(location);
-      if (storageType === 'localStorage') {
-        localStorage.setItem('userLocation', locationString);
-        // Remove from sessionStorage if it exists to avoid conflicts
-        sessionStorage.removeItem('userLocation');
-      } else {
-        sessionStorage.setItem('userLocation', locationString);
-        // Remove from localStorage if it exists to avoid conflicts
-        localStorage.removeItem('userLocation');
-      }
-    } else {
-      // Clear both storages when location is null
-      localStorage.removeItem('userLocation');
-      sessionStorage.removeItem('userLocation');
-    }
-  };
-
-  const setHasShownModal = (shown: boolean) => {
-    setHasShownModalState(shown);
-    if (shown) {
-      sessionStorage.setItem('locationModalShown', 'true');
-    } else {
-      sessionStorage.removeItem('locationModalShown');
-    }
-  };
-
-  const clearLocation = () => {
-    setUserLocationState(null);
-    localStorage.removeItem('userLocation');
-    sessionStorage.removeItem('userLocation');
-  };
-
-  const isLocationSet = userLocation !== null;
-
-  const value: LocationContextType = {
-    userLocation,
-    setUserLocation,
-    isLocationSet,
-    hasShownModal,
-    setHasShownModal,
-    clearLocation,
-  };
-
-  return (
-    <LocationContext.Provider value={value}>
-      {children}
-    </LocationContext.Provider>
-  );
-};
-
-export const useLocation = (): LocationContextType => {
+export const useLocation = () => {
   const context = useContext(LocationContext);
   if (context === undefined) {
     throw new Error('useLocation must be used within a LocationProvider');
@@ -118,4 +31,84 @@ export const useLocation = (): LocationContextType => {
   return context;
 };
 
-export type { LocationData };
+const PERSISTENT_KEY = 'userLocationPersistent';
+const SESSION_KEY = 'userLocationSession';
+const MODAL_FLAG_KEY = 'hasShownLocationModal';
+
+export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [userLocation, setUserLocationState] = useState<LocationData | null>(null);
+  const [hasShownModal, setHasShownModalState] = useState(false);
+
+  // Load any previously stored location (persistent first, session second)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const persistentRaw = localStorage.getItem(PERSISTENT_KEY);
+        const sessionRaw = sessionStorage.getItem(SESSION_KEY);
+        const modalFlag = sessionStorage.getItem(MODAL_FLAG_KEY);
+        if (modalFlag === 'true') setHasShownModalState(true);
+
+        let loaded: LocationData | null = null;
+        if (persistentRaw) {
+          loaded = JSON.parse(persistentRaw);
+        } else if (sessionRaw) {
+          loaded = JSON.parse(sessionRaw);
+        }
+        if (loaded) {
+          setUserLocationState(loaded);
+          // Derive simple strings for backward compatibility
+          setSelectedLocation(loaded.city);
+          setDeliveryAddress(`${loaded.city}${loaded.state ? ', ' + loaded.state : ''}`);
+        }
+      }
+    } catch (e) {
+      // Silently ignore malformed JSON
+      console.warn('Failed to load stored location', e);
+    }
+  }, []);
+
+  const setHasShownModal = (shown: boolean) => {
+    setHasShownModalState(shown);
+    try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(MODAL_FLAG_KEY, shown ? 'true' : 'false');
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const setUserLocation = (location: LocationData, storage: 'localStorage' | 'sessionStorage') => {
+    setUserLocationState(location);
+    // Keep legacy simple fields in sync
+    setSelectedLocation(location.city);
+    setDeliveryAddress(`${location.city}${location.state ? ', ' + location.state : ''}`);
+    try {
+      if (typeof window !== 'undefined') {
+        if (storage === 'localStorage') {
+          localStorage.setItem(PERSISTENT_KEY, JSON.stringify(location));
+          sessionStorage.removeItem(SESSION_KEY);
+        } else {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(location));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to store user location', e);
+    }
+  };
+
+  const value: LocationContextType = {
+    selectedLocation,
+    setSelectedLocation,
+    deliveryAddress,
+    setDeliveryAddress,
+    userLocation,
+    setUserLocation,
+    hasShownModal,
+    setHasShownModal
+  };
+
+  return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;
+};

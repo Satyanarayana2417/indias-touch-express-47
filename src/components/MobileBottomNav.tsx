@@ -19,19 +19,12 @@ const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { items } = useCart();
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
-  const handleAuthButtonClick = async () => {
-    if (currentUser) {
-      await logout();
-    } else {
-      navigate('/login');
-    }
-    setIsDrawerOpen(false);
-  };
+  // Auth removed: no login/logout handling
 
   const handleLogoClick = () => {
     navigate('/', { state: { scrollToHero: true } });
@@ -62,11 +55,11 @@ const MobileBottomNav = () => {
       badge: totalItems > 0 ? totalItems : null
     },
     {
-      id: 'account',
+      id: 'profile',
       icon: User,
-      label: 'Account',
+      label: currentUser ? 'Account' : 'Sign In',
       path: currentUser ? '/account' : '/login',
-      isActive: location.pathname === '/login' || location.pathname === '/account'
+      isActive: location.pathname === '/account' || location.pathname === '/login'
     },
     {
       id: 'menu',
@@ -88,31 +81,31 @@ const MobileBottomNav = () => {
   return (
     <>
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center justify-around py-1">
           {navItems.map((item) => {
             const IconComponent = item.icon;
             return (
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.path, item.id)}
-                className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 relative ${
+                className={`flex flex-col items-center justify-center py-1 px-2 min-w-0 relative ${
                   item.isActive
                     ? 'text-primary'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <div className="relative">
-                  <IconComponent className="w-6 h-6" />
+                  <IconComponent className="w-5 h-5" />
                   {item.badge && (
                     <Badge
                       variant="destructive"
-                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                      className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center text-xs"
                     >
                       {item.badge > 99 ? '99+' : item.badge}
                     </Badge>
                   )}
                 </div>
-                <span className="text-xs mt-1 font-medium">{item.label}</span>
+                <span className="text-xs mt-0.5 font-medium">{item.label}</span>
               </button>
             );
           })}
@@ -218,30 +211,7 @@ const MobileBottomNav = () => {
           </nav>
           <DrawerFooter>
             <div className="w-full space-y-2">
-              {currentUser ? (
-                <div className="text-center mb-3">
-                  <p className="text-sm text-gray-600 mb-2">
-                    Welcome, {currentUser.displayName || currentUser.email?.split('@')[0]}!
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="default" 
-                    className="w-full"
-                    onClick={handleAuthButtonClick}
-                  >
-                    Logout
-                  </Button>
-                </div>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="default" 
-                  className="w-full mb-2"
-                  onClick={handleAuthButtonClick}
-                >
-                  Sign In & Account
-                </Button>
-              )}
+              {/* Auth buttons removed */}
               <Button 
                 size="default" 
                 className="w-full"

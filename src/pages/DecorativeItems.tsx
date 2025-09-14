@@ -18,7 +18,7 @@ const DecorativeItems = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { addItem } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -40,7 +40,11 @@ const DecorativeItems = () => {
       return;
     }
 
-    await toggleWishlist(productId.toString());
+    if (isInWishlist(productId.toString())) {
+      await removeFromWishlist(productId.toString());
+    } else {
+      await addToWishlist(productId.toString());
+    }
   };
 
   const handleAuthSuccess = () => {

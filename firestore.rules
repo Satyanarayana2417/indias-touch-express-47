@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+	match /databases/{database}/documents {
+		// Users collection - each user ONLY accesses their own document
+		match /users/{userId} {
+			allow create: if request.auth != null && request.auth.uid == userId;
+			allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+
+			// Prevent returning other user docs through queries by requiring exact match
+			// Deny any query that attempts to read multiple user documents
+			allow list: if false; // Explicitly deny listing the users collection
+		}
+
+		// Carts collection - strict user isolation for shopping carts
+		match /carts/{userId} {
+			// Only allow operations if user is authenticated and accessing their own cart
+			allow read, write: if request.auth != null && request.auth.uid == userId;
+			
+			// Deny listing carts collection to prevent data leakage
+			allow list: if false;
+			
+			// Cart items subcollection - inherit parent security
+			match /items/{itemId} {
+				allow read, write: if request.auth != null && request.auth.uid == userId;
+				allow list: if request.auth != null && request.auth.uid == userId;
+			}
+		}
+
+		// Product requests collection - users can only access their own requests
+		match /productRequests/{requestId} {
+			allow create: if request.auth != null && request.auth.uid == resource.data.userId;
+			allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+			allow list: if false; // Prevent listing all requests
+		}
+
+		// Orders collection - users can only access their own orders
+		match /orders/{orderId} {
+			allow create: if request.auth != null && request.auth.uid == resource.data.userId;
+			allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+			allow list: if false; // Prevent listing all orders
+		}
+
+		// Fallback: deny everything else by default (defense in depth)
+		match /{document=**} {
+			allow read, write: if false;
+		}
+	}
+}

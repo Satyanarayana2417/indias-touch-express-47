@@ -1,26 +1,64 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, Heart, Truck, Tag } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Heart, Truck, Tag, Loader2, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
-  const { currentUser } = useAuth();
+  const { items, updateQuantity, removeItem, getTotalPrice, isLoading, syncStatus, isAuthenticated } = useCart();
   const { addToWishlist } = useWishlist();
+  const { currentUser } = useAuth();
 
   const subtotal = getTotalPrice();
   const shipping = 0; // Free shipping or calculated at checkout
   const total = subtotal + shipping;
+
+  // Sync status indicator component
+  const SyncStatusIndicator = () => {
+    if (!isAuthenticated) return null;
+    
+    switch (syncStatus) {
+      case 'syncing':
+        return (
+          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Syncing cart...</span>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <AlertCircle className="h-4 w-4" />
+            <span>Sync error - using offline mode</span>
+          </div>
+        );
+      case 'offline':
+        return (
+          <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
+            <WifiOff className="h-4 w-4" />
+            <span>Offline mode</span>
+          </div>
+        );
+      case 'synced':
+        return (
+          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+            <Wifi className="h-4 w-4" />
+            <span>Synced across devices</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   const handleQuantityChange = (id: string, newQuantity: number, variant?: string) => {
     if (newQuantity >= 1) {
@@ -34,8 +72,20 @@ const Cart = () => {
 
   const handleSaveForLater = async (id: string, variant?: string) => {
     try {
-      await addToWishlist(id);
-      // Remove from cart after successfully adding to wishlist
+      const cartItem = items.find(i => i.id === id && (i.variant || '') === (variant || ''));
+      if (!cartItem) {
+        console.warn('Cart item not found for wishlist save');
+        return;
+      }
+      // Build wishlist product shape
+      addToWishlist({
+        id: cartItem.id + (cartItem.variant ? `:${cartItem.variant}` : ''),
+        name: cartItem.name,
+        price: cartItem.displayPrice || `₹${cartItem.price}`,
+        image: cartItem.image,
+        originalPrice: cartItem.originalPrice ? `₹${cartItem.originalPrice}` : undefined,
+        inStock: true
+      });
       removeItem(id, variant);
     } catch (error) {
       console.error('Error saving item for later:', error);
@@ -43,11 +93,8 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    if (currentUser) {
-      navigate('/checkout');
-    } else {
-      navigate('/login');
-    }
+    // Allow anonymous checkout path (could later open guest checkout flow)
+    navigate('/checkout');
   };
 
   const formatPrice = (price: number) => {
@@ -63,6 +110,27 @@ const Cart = () => {
     const parsedPrice = parseFloat(cleanPrice);
     return isNaN(parsedPrice) ? 0 : parsedPrice;
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-16">
+          <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-md mx-auto">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-gray-900">Loading Your Cart</h1>
+              <p className="text-gray-600">
+                {isAuthenticated ? 'Syncing your cart data...' : 'Loading cart items...'}
+              </p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   // Empty cart state
   if (items.length === 0) {
@@ -80,6 +148,7 @@ const Cart = () => {
                 Looks like you haven't added any items to your cart yet. Start browsing our amazing products!
               </p>
             </div>
+            {isAuthenticated && <SyncStatusIndicator />}
             <Button 
               onClick={() => navigate('/shop-products')} 
               className="bg-primary hover:bg-primary/90 text-white px-8 py-3"
@@ -99,15 +168,20 @@ const Cart = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Cart Header - Hidden on Mobile */}
         <div className="mb-8 hidden md:block">
-          <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-            <p className="text-gray-600">
-              {items.length} unique item{items.length !== 1 ? 's' : ''} in your cart
-            </p>
-            <span className="hidden sm:inline text-gray-400">•</span>
-            <p className="text-gray-600">
-              Total quantity: {items.reduce((total, item) => total + item.quantity, 0)} items
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                <p className="text-gray-600">
+                  {items.length} unique item{items.length !== 1 ? 's' : ''} in your cart
+                </p>
+                <span className="hidden sm:inline text-gray-400">•</span>
+                <p className="text-gray-600">
+                  Total quantity: {items.reduce((total, item) => total + item.quantity, 0)} items
+                </p>
+              </div>
+            </div>
+            <SyncStatusIndicator />
           </div>
         </div>
 
@@ -201,7 +275,7 @@ const Cart = () => {
                             {/* Item Total */}
                             <div className="text-right">
                               <p className="text-lg font-bold text-gray-900">
-                                {formatPrice(parsePrice(item.price) * item.quantity)}
+                                {formatPrice(item.price * item.quantity)}
                               </p>
                             </div>
                           </div>
@@ -297,8 +371,8 @@ const Cart = () => {
                               {/* Item Total */}
                               <div className="text-right min-w-[80px]">
                                 <p className="text-lg font-bold text-gray-900">
-                                  {formatPrice(parsePrice(item.price) * item.quantity)}
-                                </p>
+                                    {formatPrice(item.price * item.quantity)}
+                                  </p>
                               </div>
 
                               {/* Remove Button */}
