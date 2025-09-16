@@ -1,4 +1,4 @@
-import { Search, User, ShoppingCart, MapPin, Package, ChevronDown, Globe, Heart, UtensilsCrossed, Sparkles, Truck, Menu } from "lucide-react";
+import { Search, User, ShoppingCart, MapPin, Package, ChevronDown, Globe, Heart, UtensilsCrossed, Sparkles, Truck, Menu, Mic, ShieldAlert } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -43,8 +43,18 @@ const Header = () => {
   // Get auth context for profile icon
   const { currentUser } = useAuth();
   // Adapt to current LocationContext which exposes selectedLocation & deliveryAddress
-  const { selectedLocation, deliveryAddress } = useUserLocation();
+  const { selectedLocation, deliveryAddress, userLocation } = useUserLocation();
   const isLocationSet = !!(selectedLocation || deliveryAddress);
+  // Prefer area/city + pincode if available
+  const displayLocation = (() => {
+    if (userLocation) {
+      // If city string already includes area (e.g. "Ramanthapur, Hyderabad") keep it
+      const base = userLocation.city;
+      if (userLocation.pincode) return `${base}, ${userLocation.pincode}`;
+      return base;
+    }
+    return deliveryAddress || selectedLocation;
+  })();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -104,14 +114,29 @@ const Header = () => {
       {/* Main Header Bar */}
       <div className="bg-[#0071ce] px-4 py-3">
         <div className="flex items-center space-x-3">
-          {/* Left Section - Menu Icon */}
-          <button className="text-white p-1 flex-shrink-0">
-            <Menu className="h-6 w-6" />
-          </button>
-
-          {/* Logo */}
-          <button onClick={handleLogoClick} className="flex items-center flex-shrink-0">
-            <WalmartSpark className="h-8 w-8 text-white" />
+          {/* Replaced menu + star icon with combined brand logo for mobile */}
+          <button onClick={handleLogoClick} className="flex items-center flex-shrink-0 focus:outline-none" aria-label="Venkat Express Home">
+            <img
+              src="/venkat-express-logo.png"
+              alt="Venkat Express"
+              className="h-10 w-auto object-contain drop-shadow-sm"
+              loading="eager"
+              decoding="async"
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                // Try fallback to original filename with spaces if user placed it without renaming
+                if (!img.dataset.fallbackTried) {
+                  img.dataset.fallbackTried = 'true';
+                  img.src = 'https://i.ibb.co/TDVkGrfG/IMG-20250916-WA0024.webp';
+                } else {
+                  // Final fallback: show text if image still missing
+                  img.replaceWith(Object.assign(document.createElement('span'), { 
+                    innerText: 'Venkat Express', 
+                    className: 'text-white font-semibold text-lg' 
+                  }));
+                }
+              }}
+            />
           </button>
 
           {/* Search Bar - Takes remaining space */}
@@ -122,20 +147,11 @@ const Header = () => {
             />
           </div>
 
-          {/* Right Section - Cart */}
+          {/* Right Section - Mic Icon */}
           <button 
-            onClick={() => navigate('/cart')}
             className="relative text-white p-1 flex-shrink-0"
           >
-            <ShoppingCart className="h-6 w-6" />
-            {getTotalItems() > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-orange-500 text-xs font-bold flex items-center justify-center text-white">
-                {getTotalItems()}
-              </span>
-            )}
-            <div className="text-xs mt-1 font-medium">
-              {formatPrice(getTotalPrice())}
-            </div>
+            <Mic className="h-6 w-6" />
           </button>
         </div>
       </div>
@@ -156,8 +172,8 @@ const Header = () => {
             onClick={() => setIsAddressModalOpen(true)}
             className="flex items-center space-x-1 text-white"
           >
-            <span className="text-sm font-medium">
-              {isLocationSet ? (selectedLocation || deliveryAddress).substring(0, 15) + '...' : 'Sacramento, 95829'}
+            <span className="text-sm font-medium max-w-[120px] inline-block truncate">
+              {isLocationSet ? (displayLocation || 'Location') : 'Sacramento, 95829'}
             </span>
             <ChevronDown className="h-4 w-4" />
           </button>
@@ -192,15 +208,24 @@ const Header = () => {
             {/* Left Section: Interactive Brand Component + Location */}
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-8">
-                <WalmartSpark className="h-10 w-10 text-yellow-500 cursor-pointer hover:text-yellow-600 transition-colors" onClick={handleLogoClick} />
+                {/* Replaced star icon with branded logo */}
+                <button onClick={handleLogoClick} className="flex items-center focus:outline-none" aria-label="Venkat Express Home">
+                  <img
+                    src="https://i.ibb.co/Lzj866ZR/IMG-20250916-103734-1.webp"
+                    alt="Venkat Express"
+                    className="h-14 w-auto object-contain drop-shadow-sm"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                </button>
                 {/* New Interactive Brand Component */}
                 <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-full flex items-center space-x-4 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 border border-gray-200 min-w-[250px] h-12">
                   <div className="flex flex-col text-left min-w-0">
                     <span className="text-sm font-bold text-gray-700 leading-tight">
                       {isLocationSet ? 'Your Location:' : 'Shipping From:'}
                     </span>
-                    <span className="text-xs text-gray-500 leading-tight truncate">
-                      {isLocationSet ? (selectedLocation || deliveryAddress) : 'Hyderabad, Telangana • India'}
+                    <span className="text-xs text-gray-500 leading-tight truncate" title={isLocationSet ? (displayLocation || deliveryAddress || selectedLocation) : 'Hyderabad, Telangana • India'}>
+                      {isLocationSet ? (displayLocation || deliveryAddress || selectedLocation) : 'Hyderabad, Telangana • India'}
                     </span>
                   </div>
                   <ChevronDown className="h-4 w-4 text-gray-500 flex-shrink-0" />
@@ -307,6 +332,13 @@ const Header = () => {
                 className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 hover:text-primary hover:shadow-md transition-all duration-200 shadow-sm border border-gray-100"
               >
                 About Us
+              </a>
+              <a 
+                href="/prohibited-items" 
+                className="bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 hover:text-primary hover:shadow-md transition-all duration-200 shadow-sm border border-gray-100"
+                aria-label="View list of prohibited items for international shipping"
+              >
+                Prohibited Items
               </a>
             </nav>
           </div>

@@ -2,9 +2,13 @@
 
 // Public type for richer location data used by modals/components
 export interface LocationData {
-  city: string;
+  city: string; // May include area + city (e.g. "Madhapur, Hyderabad")
   state: string;
   country: string;
+  fullAddress?: string; // Rich formatted address if available (street, area, city, state, country)
+  latitude?: number;
+  longitude?: number;
+  pincode?: string; // Postal code / ZIP
 }
 
 interface LocationContextType {
@@ -84,7 +88,15 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
     setUserLocationState(location);
     // Keep legacy simple fields in sync
     setSelectedLocation(location.city);
-    setDeliveryAddress(`${location.city}${location.state ? ', ' + location.state : ''}`);
+    // Prefer fullAddress if present, else compose
+    const composedParts = [
+      location.fullAddress,
+      !location.fullAddress && location.city ? location.city : null,
+      !location.fullAddress && location.state ? location.state : null,
+      !location.fullAddress && location.pincode ? location.pincode : null
+    ].filter(Boolean) as string[];
+    const composed = composedParts.join(', ');
+    setDeliveryAddress(composed);
     try {
       if (typeof window !== 'undefined') {
         if (storage === 'localStorage') {

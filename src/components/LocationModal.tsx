@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { reverseGeocodeGoogle } from '@/lib/geocoding';
 import { MapPin, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LocationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLocationChoice: (type: 'allow' | 'session' | 'deny', location?: { city: string; state: string; country: string }) => void;
+  onLocationChoice: (type: 'allow' | 'session' | 'deny', location?: { city: string; state: string; country: string; fullAddress?: string; latitude?: number; longitude?: number }) => void;
 }
 
 const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps) => {
@@ -17,6 +18,21 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
   // Function to get location from coordinates using OpenStreetMap Nominatim
   const getCityFromCoordinates = async (latitude: number, longitude: number) => {
     try {
+      // Try Google first if API key configured
+      try {
+        const googleResult = await reverseGeocodeGoogle(latitude, longitude);
+        // Google result already contains formatted address; attempt to parse pincode (postal code)
+        let pincode: string | undefined = undefined;
+        if (googleResult.fullAddress) {
+          const pinMatch = googleResult.fullAddress.match(/\b\d{5,6}\b/); // India 6 digits, fallback 5+ for other regions
+          if (pinMatch) pincode = pinMatch[0];
+        }
+        return { ...googleResult, pincode };
+      } catch (googleErr) {
+        // Silent fallback to existing providers
+        // console.warn('Google geocoding failed, falling back:', googleErr);
+      }
+
       // Try OpenStreetMap Nominatim first
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`
@@ -39,13 +55,18 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
                     data.address.state_district || 
                     'Unknown City';
         
-        const state = data.address.state || '';
+  const state = data.address.state || '';
         const country = data.address.country || '';
+  const pincode = data.address.postcode || undefined;
         
         // If we have area info, include it with the city
         const fullCity = area && area !== city ? `${area}, ${city}` : city;
         
-        return { city: fullCity, state, country };
+        // Build a richer fullAddress (street/road + area + city + state + country)
+        const street = data.address.road || data.address.pedestrian || data.address.suburb || '';
+        const parts = [street, area !== city ? area : null, city, state, country].filter(Boolean);
+        const fullAddress = parts.join(', ');
+        return { city: fullCity, state, country, fullAddress, latitude, longitude, pincode };
       }
       
       // Fallback to BigDataCloud API if Nominatim fails
@@ -59,10 +80,12 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
         const city = fallbackData.city || fallbackData.locality || 'Unknown City';
         const state = fallbackData.principalSubdivision || '';
         const country = fallbackData.countryName || '';
+        const pincode = fallbackData.postcode || fallbackData.plusCode || undefined;
         
         const fullCity = area && area !== city ? `${area}, ${city}` : city;
         
-        return { city: fullCity, state, country };
+        const fullAddress = [fullCity, state, country].filter(Boolean).join(', ');
+        return { city: fullCity, state, country, fullAddress, latitude, longitude, pincode };
       }
       
       throw new Error('Unable to determine location');
@@ -73,6 +96,10 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
   };
 
   // Handle location access request
+  // NOTE: We only request coordinates and immediately convert to a coarse (city/area + pincode) string.
+  // No coordinates are persisted beyond local/session storage for user experience.
+  // Compatible with Chrome, Safari (requires HTTPS), and modern mobile browsers.
+  // If permission is denied, we fall back to manual entry (AddressModal via manager).
   const handleLocationRequest = async (type: 'allow' | 'session') => {
     setIsLoading(true);
     setLoadingType(type);
@@ -95,7 +122,10 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
             onLocationChoice(type, { 
               city: `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`, 
               state: '', 
-              country: '' 
+              country: '',
+              fullAddress: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              latitude,
+              longitude
             });
           } finally {
             setIsLoading(false);
@@ -110,6 +140,7 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
           onLocationChoice('deny');
         },
         {
+          // High accuracy attempts GPS on mobile; may take longer on some devices
           enableHighAccuracy: true,
           timeout: 10000,
           maximumAge: 300000 // 5 minutes

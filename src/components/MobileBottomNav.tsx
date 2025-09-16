@@ -18,11 +18,18 @@ import { useAuth } from '@/context/AuthContext';
 const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { items } = useCart();
+  const { items, getTotalPrice } = useCart();
   const { currentUser } = useAuth();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+  
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+    }).format(price);
+  };
 
   // Auth removed: no login/logout handling
 
@@ -49,7 +56,7 @@ const MobileBottomNav = () => {
     {
       id: 'cart',
       icon: ShoppingCart,
-      label: 'Cart',
+      label: formatPrice(getTotalPrice()),
       path: '/cart',
       isActive: location.pathname === '/cart',
       badge: totalItems > 0 ? totalItems : null

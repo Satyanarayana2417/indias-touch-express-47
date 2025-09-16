@@ -1,6 +1,6 @@
 ﻿// Firebase core imports
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
 // Production Firebase configuration (provided)
@@ -30,6 +30,12 @@ if (!getApps().length) {
 
 auth = getAuth(app);
 db = getFirestore(app);
+
+// Configure Google Auth Provider
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 export { app, auth, db };
 export default app;

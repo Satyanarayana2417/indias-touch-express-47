@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -101,12 +102,23 @@ export default {
             height: "0",
           },
         },
+        // Attention-grabbing pulse/blink for emergency style buttons
+        "attention-pulse": {
+          '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(220,38,38,0.6)' },
+          '50%': { transform: 'scale(1.05)', boxShadow: '0 0 0 6px rgba(220,38,38,0)' },
+        },
+        "soft-blink": {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.35' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "attention-pulse": "attention-pulse 1.8s cubic-bezier(0.4,0,0.2,1) infinite",
+        "soft-blink": "soft-blink 2.4s ease-in-out infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

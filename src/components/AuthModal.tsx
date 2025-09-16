@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { User } from 'firebase/auth';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+import { UserProfileModal } from '@/components/UserProfileModal';
 import {
   Dialog,
   DialogContent,
@@ -36,10 +39,13 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const { login, signup } = useAuth();
+  const { login, signup, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [newGoogleUser, setNewGoogleUser] = useState<User | null>(null);
 
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
@@ -81,24 +87,68 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+
+    try {
+      const { isNewUser, user } = await signInWithGoogle();
+      
+      if (isNewUser) {
+        // Show profile completion modal for new users
+        setNewGoogleUser(user);
+        setShowProfileModal(true);
+        onClose(); // Close auth modal
+      } else {
+        // Existing user - show welcome back message and complete flow
+        toast({
+          title: "Welcome back!",
+          description: `Successfully signed in as ${user.displayName || user.email}.`,
+        });
+        onClose();
+        onSuccess();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Google Sign-in failed",
+        description: error.message || "Unable to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleProfileComplete = () => {
+    if (newGoogleUser) {
+      toast({
+        title: "Welcome!",
+        description: `Account created for ${newGoogleUser.email}. Welcome to India's Touch Express!`,
+      });
+    }
+    setShowProfileModal(false);
+    setNewGoogleUser(null);
+    onSuccess();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-serif text-primary text-center">
-            Authentication Required
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif text-primary text-center">
+              Authentication Required
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="text-center text-sm text-muted-foreground mb-4">
-          Please log in or create an account to submit product requests.
-        </div>
+          <div className="text-center text-sm text-muted-foreground mb-4">
+            Please log in or create an account to submit product requests.
+          </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Log In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Log In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="login" className="space-y-4">
             <Form {...form}>
@@ -142,12 +192,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isLoading || isGoogleLoading}
                 >
                   {isLoading ? 'Logging in...' : 'Log In'}
                 </Button>
               </form>
             </Form>
+
+            {/* OR Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-4 text-gray-500 font-medium">OR</span>
+              </div>
+            </div>
+
+            {/* Google Sign-in Button */}
+            <GoogleSignInButton
+              onClick={handleGoogleSignIn}
+              isLoading={isGoogleLoading}
+              variant="login"
+              disabled={isLoading || isGoogleLoading}
+            />
           </TabsContent>
 
           <TabsContent value="signup" className="space-y-4">
@@ -192,12 +260,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isLoading || isGoogleLoading}
                 >
                   {isLoading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
             </Form>
+
+            {/* OR Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-4 text-gray-500 font-medium">OR</span>
+              </div>
+            </div>
+
+            {/* Google Sign-in Button */}
+            <GoogleSignInButton
+              onClick={handleGoogleSignIn}
+              isLoading={isGoogleLoading}
+              variant="signup"
+              disabled={isLoading || isGoogleLoading}
+            />
           </TabsContent>
         </Tabs>
 
@@ -205,11 +291,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           variant="outline"
           onClick={onClose}
           className="w-full mt-4"
-          disabled={isLoading}
+          disabled={isLoading || isGoogleLoading}
         >
           Cancel
         </Button>
       </DialogContent>
     </Dialog>
+
+    {/* User Profile Modal for new Google users */}
+    {showProfileModal && newGoogleUser && (
+      <UserProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        user={newGoogleUser}
+        onComplete={handleProfileComplete}
+      />
+    )}
+  </>
   );
 };

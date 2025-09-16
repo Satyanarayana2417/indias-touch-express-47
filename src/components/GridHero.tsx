@@ -27,11 +27,13 @@ const GridHero = () => {
           {/* Left Column Card 1 - Top Card (Medium Size) */}
           <article className={`${cardBase} lg:[grid-column:1/4] lg:[grid-row:1/3] hover:transform hover:scale-[1.02] hover:-translate-y-1`}> 
             <div className="relative w-full h-48 md:h-56 lg:h-full">
-              <img src="https://plus.unsplash.com/premium_photo-1669130744503-4939a5bcef43?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8aW5kaWFuJTIwc3BpY2VzfGVufDB8fDB8fHww" alt="Free spice sample with aromatic Indian spices" className={imageBase} />
+              <img src="https://plus.unsplash.com/premium_photo-1669130744503-4939a5bcef43?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c3BpY2VzfGVufDB8fDB8fHww" alt="Free spice sample with aromatic Indian spices" className={imageBase} />
               <div className={`${overlayBase} bg-gradient-to-t from-black/40 to-transparent`}></div>
               <div className={`${innerBase} justify-end text-white`}> 
-                <h3 className="font-serif font-bold text-lg leading-snug">Free Spice Sample<br/>With First Order</h3>
-                <a href="#" className="text-sm font-medium mt-2 underline decoration-secondary/60 hover:decoration-secondary transition-colors">Learn More</a>
+                <h3 className="font-serif font-bold text-lg leading-snug">Shop from India,
+
+<br/>we deliver to your doorstep</h3>
+                <a href="#" className="text-sm font-medium mt-2 underline decoration-secondary/60 hover:decoration-secondary transition-colors">Learn more</a>
               </div>
             </div>
           </article>
@@ -39,9 +41,24 @@ const GridHero = () => {
           {/* Card 2 - Large Prominent */}
           <article className={`${cardBase} lg:[grid-column:4/10] lg:[grid-row:1/4] flex`}> 
             <div className="relative flex-1 flex flex-col justify-end p-6 lg:p-8">
-              <img src="https://i.ibb.co/Fqbv2fGG/IMG-20250911-133122.webp" alt="Global Express Shipping" className="absolute inset-0 w-full h-full object-cover" />
+              {/* Responsive hero (mobile gets alternate image) */}
+              <picture>
+                {/* Mobile first (<= 767px) */}
+                <source
+                  media="(max-width: 767px)"
+                  srcSet="https://i.ibb.co/Fqbv2fGG/IMG-20250911-133122.webp"
+                />
+                {/* Default / desktop */}
+                <img 
+                  src="https://i.ibb.co/Fqbv2fGG/IMG-20250911-133122.webp" 
+                  alt="Global Express Shipping" 
+                  className="absolute inset-0 w-full h-full object-cover" 
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
               <div className="relative z-10 space-y-4">
-                <span className={tagBase + " bg-secondary text-secondary-foreground w-fit"}>⚡️ Express Shipping</span>
+                <span className={tagBase + " bg-secondary text-secondary-foreground w-fit"}></span>
                 <h2 className="font-serif font-bold text-2xl lg:text-4xl leading-tight max-w-xl text-white">
                 
                 </h2>
