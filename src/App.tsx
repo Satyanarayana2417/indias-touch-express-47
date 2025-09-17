@@ -43,7 +43,6 @@ import AccountProfile from "./pages/AccountProfile";
 import AccountAddresses from "./pages/AccountAddresses";
 import Help from "./pages/Help";
 import ProhibitedItems from "./pages/ProhibitedItems";
-import ProhibitedItemsFab from "@/components/ProhibitedItemsFab";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +58,6 @@ const App = () => (
                 <Sonner />
                 <BrowserRouter>
                   <LocationModalManager />
-                  <ProhibitedItemsFab />
                   <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<Index />} />

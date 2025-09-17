@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Layout from "@/components/Layout";
 import GridHero from "@/components/GridHero";
 import ProductShowcaseRows from "@/components/ProductShowcaseRows";
 import ServiceSelection from "@/components/ServiceSelection";
@@ -35,20 +34,16 @@ const Index = () => {
   }, [location.state]);
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
-      <Header />
-      <main>
-        <GridHero />
-        <ProductShowcaseRows />
-        <div className="container mx-auto px-4 py-8">
-          <ProductRequestBanner />
-        </div>
-        <ThreeRowCarousels />
-        <ServiceSelection />
-        <HowItWorks />
-      </main>
-      <Footer />
-    </div>
+    <Layout>
+      <GridHero />
+      <ProductShowcaseRows />
+      <div className="container mx-auto px-4 py-8">
+        <ProductRequestBanner />
+      </div>
+      <ThreeRowCarousels />
+      <ServiceSelection />
+      <HowItWorks />
+    </Layout>
   );
 };
 
