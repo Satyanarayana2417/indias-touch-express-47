@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, Heart, Truck, Tag, Loader2, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Heart, Truck, Tag, Loader2, Wifi, WifiOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -11,12 +11,17 @@ import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import OrderFlow from '@/components/OrderFlow';
 
 const Cart = () => {
   const navigate = useNavigate();
   const { items, updateQuantity, removeItem, getTotalPrice, isLoading, syncStatus, isAuthenticated } = useCart();
   const { addToWishlist } = useWishlist();
   const { currentUser } = useAuth();
+  
+  // State for order flow
+  const [isOrderFlowOpen, setIsOrderFlowOpen] = useState(false);
+  const [orderCompleted, setOrderCompleted] = useState<string | null>(null);
 
   const subtotal = getTotalPrice();
   const shipping = 0; // Free shipping or calculated at checkout
@@ -93,8 +98,19 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // Allow anonymous checkout path (could later open guest checkout flow)
-    navigate('/checkout');
+    // Open order flow instead of navigating to checkout page
+    setIsOrderFlowOpen(true);
+  };
+
+  const handleOrderComplete = (orderId: string) => {
+    setOrderCompleted(orderId);
+    setIsOrderFlowOpen(false);
+    // Optionally navigate to order confirmation page
+    // navigate(`/order-confirmation/${orderId}`);
+  };
+
+  const handleCloseOrderFlow = () => {
+    setIsOrderFlowOpen(false);
   };
 
   const formatPrice = (price: number) => {
@@ -189,22 +205,31 @@ const Cart = () => {
           {/* Cart Items - Full width on mobile, left column on desktop */}
           <div className="lg:col-span-8">
             {/* Mobile Cart Items */}
-            <div className="md:hidden space-y-4">
+            <div className="md:hidden space-y-2">
               {items.map((item, index) => (
                 <Card key={item.id} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
+                  <CardContent className="p-3">
+                    <div className="flex gap-3">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
-                        <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                          {item.image ? (
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                          {item.image && item.image !== '/placeholder.svg' ? (
                             <img
                               src={item.image}
                               alt={item.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                target.src = '/placeholder.svg';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `
+                                    <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                      <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                      </svg>
+                                    </div>
+                                  `;
+                                }
                               }}
                             />
                           ) : (
@@ -217,9 +242,9 @@ const Cart = () => {
 
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <div className="flex justify-between items-start">
-                            <h3 className="text-base font-semibold text-gray-900 leading-tight">
+                            <h3 className="text-sm font-semibold text-gray-900 leading-tight">
                               {item.name}
                             </h3>
                             <Button
@@ -228,38 +253,26 @@ const Cart = () => {
                               className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 ml-2"
                               onClick={() => handleRemoveItem(item.id, item.variant)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
 
-                          {/* Price and Discount */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-primary">
-                              {item.price}
-                            </span>
-                            {/* Mock discount badge - can be made dynamic */}
-                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                              <Tag className="w-3 h-3 mr-1" />
-                              10% OFF
-                            </Badge>
-                          </div>
-
                           {/* Delivery Info */}
-                          <div className="flex items-center gap-1 text-sm text-green-600">
-                            <Truck className="w-4 h-4" />
+                          <div className="flex items-center gap-1 text-xs text-green-600">
+                            <Truck className="w-3 h-3" />
                             <span>Free delivery by tomorrow</span>
                           </div>
 
                           {/* Quantity and Actions */}
-                          <div className="flex items-center justify-between pt-2">
+                          <div className="flex items-center justify-between pt-1">
                             {/* Quantity Dropdown */}
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-600">Qty:</span>
+                              <span className="text-xs text-gray-600">Qty:</span>
                               <Select 
                                 value={item.quantity.toString()} 
                                 onValueChange={(value) => handleQuantityChange(item.id, parseInt(value), item.variant)}
                               >
-                                <SelectTrigger className="w-16 h-8">
+                                <SelectTrigger className="w-14 h-7">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -274,21 +287,21 @@ const Cart = () => {
 
                             {/* Item Total */}
                             <div className="text-right">
-                              <p className="text-lg font-bold text-gray-900">
+                              <p className="text-base font-bold text-gray-900">
                                 {formatPrice(item.price * item.quantity)}
                               </p>
                             </div>
                           </div>
 
                           {/* Action Buttons */}
-                          <div className="flex gap-2 pt-2">
+                          <div className="flex gap-2 pt-1">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-1 text-sm"
+                              className="flex-1 text-xs h-7"
                               onClick={() => handleSaveForLater(item.id, item.variant)}
                             >
-                              <Heart className="w-4 h-4 mr-1" />
+                              <Heart className="w-3 h-3 mr-1" />
                               Save for Later
                             </Button>
                           </div>
@@ -312,14 +325,23 @@ const Cart = () => {
                         {/* Product Image */}
                         <div className="flex-shrink-0">
                           <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
-                            {item.image ? (
+                            {item.image && item.image !== '/placeholder.svg' ? (
                               <img
                                 src={item.image}
                                 alt={item.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
-                                  target.src = '/placeholder.svg';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = `
+                                      <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        </svg>
+                                      </div>
+                                    `;
+                                  }
                                 }}
                               />
                             ) : (
@@ -337,9 +359,6 @@ const Cart = () => {
                               <h3 className="text-lg font-semibold text-gray-900 break-words">
                                 {item.name}
                               </h3>
-                              <p className="text-lg font-bold text-primary mt-1">
-                                {item.price}
-                              </p>
                             </div>
 
                             {/* Quantity and Remove Controls */}
@@ -454,8 +473,8 @@ const Cart = () => {
         </div>
 
         {/* Mobile Sticky Footer */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
-          <div className="flex items-center justify-between mb-3">
+        <div className="md:hidden fixed bottom-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-50">
+          <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm text-gray-500 line-through">
                 ₹{Math.round(total * 1.2).toLocaleString('en-IN')}
@@ -466,7 +485,7 @@ const Cart = () => {
             </div>
             <Button 
               onClick={handleCheckout}
-              className="bg-yellow-400 hover:bg-yellow-500 text-black py-3 px-8 text-lg font-semibold rounded-lg"
+              className="bg-yellow-400 hover:bg-yellow-500 text-black py-2 px-6 text-lg font-semibold rounded-lg"
               size="lg"
             >
               Place Order
@@ -474,7 +493,51 @@ const Cart = () => {
           </div>
         </div>
       </div>
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+
+      {/* Order Flow Modal */}
+      <OrderFlow
+        isOpen={isOrderFlowOpen}
+        onClose={handleCloseOrderFlow}
+        onOrderComplete={handleOrderComplete}
+      />
+
+      {/* Order Completed Success Message */}
+      {orderCompleted && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="max-w-md mx-4">
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold">Order Placed Successfully!</h3>
+                <p className="text-gray-600">Your order ID is: {orderCompleted}</p>
+                <p className="text-sm text-gray-500">
+                  You will receive a confirmation email shortly with order details.
+                </p>
+              </div>
+              <div className="space-y-2 pt-4">
+                <Button 
+                  onClick={() => navigate('/shop-products')}
+                  className="w-full bg-primary hover:bg-primary/90"
+                >
+                  Continue Shopping
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setOrderCompleted(null)}
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

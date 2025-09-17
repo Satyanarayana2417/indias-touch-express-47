@@ -4,18 +4,13 @@ import Footer from "@/components/Footer";
 import CollapsibleProhibitedCard from "@/components/CollapsibleProhibitedCard";
 import { ShieldAlert } from "lucide-react";
 
-interface ProhibitedCategory {
-  id: string;
-  title: string;
-  icon: React.ComponentType<any>;
-  description: string;
-  items: { name: string; reason: string; note?: string; image?: string }[];
-}
-
-const CATEGORIES: ProhibitedCategory[] = [];
+// Removed unused CATEGORIES array to prevent potential issues
 
 const ProhibitedItems = () => {
   console.log('ProhibitedItems component rendering...');
+  
+  // Add error boundary check
+  try {
 
   // Dangerous goods data
   const dangerousGoodsItems = [
@@ -276,8 +271,8 @@ const ProhibitedItems = () => {
           <div className="relative container mx-auto px-4">
             <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-secondary mb-6">Why Are These Items Restricted?</h2>
-                <p className="text-primary-foreground/80 leading-relaxed mb-6 text-lg">International air cargo is governed by IATA, ICAO, airline, and destination-country regulations. Shipping prohibited items can result in fines, seizure, or legal action. Our compliance ensures safety, integrity, and smooth delivery for all customers.</p>
+                <h2 className="text-xl md:text-3xl lg:text-4xl font-serif font-bold text-secondary mb-4 md:mb-6">Why Are These Items Restricted?</h2>
+                <p className="text-primary-foreground/80 leading-relaxed mb-4 md:mb-6 text-sm md:text-lg">International air cargo is governed by IATA, ICAO, airline, and destination-country regulations. Shipping prohibited items can result in fines, seizure, or legal action. Our compliance ensures safety, integrity, and smooth delivery for all customers.</p>
                 <ul className="space-y-3 text-sm text-primary-foreground/90">
                   <li className="flex items-start"><span className="mt-1 mr-2 h-2 w-2 bg-secondary rounded-full"></span>Protects airline crew, cargo handlers & passengers</li>
                   <li className="flex items-start"><span className="mt-1 mr-2 h-2 w-2 bg-secondary rounded-full"></span>Prevents environmental contamination & fire risk</li>
@@ -318,6 +313,27 @@ const ProhibitedItems = () => {
       <Footer />
     </div>
   );
+  } catch (error) {
+    console.error('Error in ProhibitedItems component:', error);
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="py-8">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
+            <p className="text-gray-600">There was an error loading the prohibited items page.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Reload Page
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 };
 
 export default ProhibitedItems;

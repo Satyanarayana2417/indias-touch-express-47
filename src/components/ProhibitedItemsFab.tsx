@@ -12,9 +12,6 @@ const ProhibitedItemsFab = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(true);
 
-  // Hide the FAB on the prohibited items page itself
-  if (location.pathname === "/prohibited-items") return null;
-
   // Show FAB only in hero section (typically first 500-600px of viewport height)
   useEffect(() => {
     const handleScroll = () => {
@@ -43,6 +40,9 @@ const ProhibitedItemsFab = () => {
     // Use window.location for more reliable navigation
     window.location.href = '/prohibited-items';
   };
+
+  // Hide the FAB on the prohibited items page itself
+  if (location.pathname === "/prohibited-items") return null;
 
   return (
     <>
