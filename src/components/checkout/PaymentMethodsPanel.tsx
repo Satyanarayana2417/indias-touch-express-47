@@ -3,17 +3,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreditCard, Building, Wallet, Calculator, Smartphone, ChevronDown } from 'lucide-react';
+import MobilePaymentMethods from './MobilePaymentMethods';
 
 interface PaymentMethodsPanelProps {
   selectedPayment: string;
   onPaymentSelect: (method: string) => void;
   isMobile: boolean;
+  onPaymentComplete?: (paymentData: any) => void;
 }
 
 const PaymentMethodsPanel: React.FC<PaymentMethodsPanelProps> = ({
   selectedPayment,
   onPaymentSelect,
-  isMobile
+  isMobile,
+  onPaymentComplete
 }) => {
   const paymentMethods = [
     {
@@ -56,67 +59,14 @@ const PaymentMethodsPanel: React.FC<PaymentMethodsPanelProps> = ({
   // Mobile dropdown layout
   if (isMobile) {
     return (
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            <h3 className="text-base font-medium text-gray-900">Payment Method</h3>
-            <Select value={selectedPayment} onValueChange={onPaymentSelect}>
-              <SelectTrigger className="w-full h-12">
-                <SelectValue placeholder="Select payment method">
-                  {selectedPayment && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        {paymentMethods.find(m => m.id === selectedPayment)?.icon}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-sm">
-                          {paymentMethods.find(m => m.id === selectedPayment)?.name}
-                        </div>
-                        {paymentMethods.find(m => m.id === selectedPayment)?.description && (
-                          <div className="text-xs text-gray-600">
-                            {paymentMethods.find(m => m.id === selectedPayment)?.description}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {paymentMethods.map((method) => (
-                  <SelectItem 
-                    key={method.id} 
-                    value={method.id} 
-                    disabled={!method.available}
-                    className="py-3"
-                  >
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="flex-shrink-0">
-                        {method.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{method.name}</span>
-                          {!method.available && (
-                            <Badge variant="secondary" className="text-xs">
-                              Unavailable
-                            </Badge>
-                          )}
-                        </div>
-                        {method.description && (
-                          <p className="text-xs text-gray-600 mt-0.5">
-                            {method.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 px-1">Choose Payment Method</h3>
+        <MobilePaymentMethods
+          selectedPayment={selectedPayment}
+          onPaymentSelect={onPaymentSelect}
+          onPaymentComplete={onPaymentComplete}
+        />
+      </div>
     );
   }
 

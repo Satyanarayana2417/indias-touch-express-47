@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, User, ShoppingCart, Menu, Grid3X3, Truck, Package, UtensilsCrossed, Sparkles, Info, Store } from 'lucide-react';
+import { Home, User, ShoppingCart, Menu, Grid3X3, Truck, Package, UtensilsCrossed, Sparkles, Info, Store, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -202,6 +202,18 @@ const MobileBottomNav = () => {
             >
               <Sparkles className="h-5 w-5 text-gray-600" />
               <span>Decorative Items</span>
+            </a>
+            <a 
+              href="/prohibited-items" 
+              className="py-3 px-2 flex items-center space-x-3 text-red-600"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/prohibited-items');
+                setIsDrawerOpen(false);
+              }}
+            >
+              <ShieldAlert className="h-5 w-5 text-red-600" />
+              <span>Prohibited Items</span>
             </a>
             <a 
               href="/about-us" 

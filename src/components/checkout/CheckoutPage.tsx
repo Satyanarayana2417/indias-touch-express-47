@@ -137,13 +137,18 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
     }
   };
 
+  const handlePaymentSelect = (method: string) => {
+    setSelectedPayment(method as PaymentMethod);
+  };
+
   if (isMobile) {
     return (
       <div className="p-4 space-y-4">
         <PaymentMethodsPanel 
           selectedPayment={selectedPayment}
-          onPaymentSelect={setSelectedPayment}
+          onPaymentSelect={handlePaymentSelect}
           isMobile={true}
+          onPaymentComplete={handlePayment}
         />
         
         {selectedPayment === 'upi' && (
@@ -197,8 +202,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
           <div className="lg:col-span-1">
             <PaymentMethodsPanel 
               selectedPayment={selectedPayment}
-              onPaymentSelect={setSelectedPayment}
+              onPaymentSelect={handlePaymentSelect}
               isMobile={false}
+              onPaymentComplete={handlePayment}
             />
           </div>
 

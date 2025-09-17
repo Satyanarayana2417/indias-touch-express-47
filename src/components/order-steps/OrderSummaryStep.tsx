@@ -222,7 +222,7 @@ const OrderSummaryStep: React.FC<OrderSummaryStepProps> = ({ orderData, onNext, 
       </div>
 
       {/* Action Buttons */}
-      <div className={`${isMobile ? 'mt-4 px-4 pb-6 mb-4' : 'flex-shrink-0 border-t bg-white px-6 py-4'}`}>
+      <div className={`${isMobile ? '-mt-2 px-4 pb-6 mb-20' : 'flex-shrink-0 border-t bg-white px-6 py-4'}`}>
         <div className={`flex ${isMobile ? 'gap-3' : 'justify-between'}`}>
           {!isMobile && (
             <Button variant="outline" onClick={onBack}>
