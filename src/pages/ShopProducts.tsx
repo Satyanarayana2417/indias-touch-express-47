@@ -39,13 +39,6 @@ const ShopProducts = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Force grid view on mobile for better experience
-  useEffect(() => {
-    if (isMobile && viewMode === "list") {
-      setViewMode("grid");
-    }
-  }, [isMobile, viewMode]);
-
   // Mock products data
   const allProducts: Product[] = [
     {

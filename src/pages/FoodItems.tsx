@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Filter, Star, ShoppingCart, Heart, Leaf, Award } from "lucide-react";
+import { Search, Filter, Star, ShoppingCart, Heart, Leaf, Award, Grid, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -16,11 +16,12 @@ import { toast } from "@/hooks/use-toast";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const FoodItems = () => {
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { addItem } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -42,7 +43,20 @@ const FoodItems = () => {
       return;
     }
 
-    await toggleWishlist(productId.toString());
+    if (isInWishlist(productId.toString())) {
+      await removeFromWishlist(productId.toString());
+    } else {
+      await addToWishlist({
+        id: productId.toString(),
+        name: foodProducts.find(p => p.id === productId)?.name || '',
+        price: foodProducts.find(p => p.id === productId)?.price || '',
+        image: foodProducts.find(p => p.id === productId)?.image || '',
+        originalPrice: foodProducts.find(p => p.id === productId)?.originalPrice,
+        inStock: foodProducts.find(p => p.id === productId)?.inStock || false,
+        rating: foodProducts.find(p => p.id === productId)?.rating || 0,
+        reviews: foodProducts.find(p => p.id === productId)?.reviews || 0
+      });
+    }
   };
 
   const handleAuthSuccess = () => {
@@ -391,74 +405,167 @@ const FoodItems = () => {
                   </div>
                 </div>
 
-                {/* Products Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                {/* Products Count and View Toggle */}
+                <div className="flex justify-between items-center mb-6">
+                  <p className="text-sm text-gray-600">
+                    Showing {filteredProducts.length} products
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Products Grid/List */}
+                <div className={viewMode === 'grid' 
+                  ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6'
+                  : 'space-y-4'
+                }>
                   {filteredProducts.map((product) => (
                     <div 
                       key={product.id} 
-                      className="group cursor-pointer"
+                      className={`group cursor-pointer ${
+                        viewMode === 'list' ? 'flex flex-row bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4' : ''
+                      }`}
                       onClick={() => handleProductClick(product.id)}
                     >
-                      <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                        <div className="relative overflow-hidden bg-gray-50">
-                          <button 
-                            className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
-                            onClick={(e) => handleWishlistToggle(e, product.id)}
-                          >
-                            <Heart 
-                              className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
-                                isInWishlist(product.id.toString()) 
-                                  ? 'text-red-500 fill-red-500' 
-                                  : 'text-gray-600 hover:text-red-500'
-                              }`} 
-                            />
-                          </button>
-                          {/* Badges */}
-                          {product.badges && product.badges.length > 0 && (
-                            <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold z-10">
-                              {product.badges[0]}
-                            </div>
-                          )}
-                          {/* Stock Status */}
-                          {!product.inStock && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                              <span className="text-white font-semibold text-sm">Out of Stock</span>
-                            </div>
-                          )}
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-32 sm:h-40 md:h-44 object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="p-2 sm:p-3">
-                          <div className="mb-2">
-                            <span className="text-sm sm:text-lg font-bold text-gray-900">
-                              {product.price}
-                            </span>
-                            {product.originalPrice && (
-                              <span className="text-xs sm:text-sm text-gray-500 line-through ml-1 sm:ml-2">
-                                {product.originalPrice}
-                              </span>
+                      {viewMode === 'grid' ? (
+                        // Grid View
+                        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="relative overflow-hidden bg-gray-50">
+                            <button 
+                              className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
+                              onClick={(e) => handleWishlistToggle(e, product.id)}
+                            >
+                              <Heart 
+                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+                                  isInWishlist(product.id.toString()) 
+                                    ? 'text-red-500 fill-red-500' 
+                                    : 'text-gray-600 hover:text-red-500'
+                                }`} 
+                              />
+                            </button>
+                            {/* Badges */}
+                            {product.badges && product.badges.length > 0 && (
+                              <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold z-10">
+                                {product.badges[0]}
+                              </div>
                             )}
+                            {/* Stock Status */}
+                            {!product.inStock && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                <span className="text-white font-semibold text-sm">Out of Stock</span>
+                              </div>
+                            )}
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-32 sm:h-40 md:h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
                           </div>
-                          <h3 className="text-xs sm:text-sm text-gray-700 line-clamp-2 mb-2 sm:mb-3 leading-tight">
-                            {product.name}
-                          </h3>
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCart(product);
-                            }}
-                            className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
-                            variant="outline"
-                            disabled={!product.inStock}
-                          >
-                            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            {product.inStock ? 'Add' : 'Out of Stock'}
-                          </Button>
+                          <div className="p-2 sm:p-3">
+                            <div className="mb-2">
+                              <span className="text-sm sm:text-lg font-bold text-gray-900">
+                                {product.price}
+                              </span>
+                              {product.originalPrice && (
+                                <span className="text-xs sm:text-sm text-gray-500 line-through ml-1 sm:ml-2">
+                                  {product.originalPrice}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="text-xs sm:text-sm text-gray-700 line-clamp-2 mb-2 sm:mb-3 leading-tight">
+                              {product.name}
+                            </h3>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                              }}
+                              className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
+                              variant="outline"
+                              disabled={!product.inStock}
+                            >
+                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              {product.inStock ? 'Add' : 'Out of Stock'}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        // List View
+                        <>
+                          <div className="relative w-32 h-32 flex-shrink-0 mr-4 bg-gray-50 rounded-lg overflow-hidden">
+                            <button 
+                              className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
+                              onClick={(e) => handleWishlistToggle(e, product.id)}
+                            >
+                              <Heart 
+                                className={`w-4 h-4 transition-colors ${
+                                  isInWishlist(product.id.toString()) 
+                                    ? 'text-red-500 fill-red-500' 
+                                    : 'text-gray-600 hover:text-red-500'
+                                }`} 
+                              />
+                            </button>
+                            {/* Badges */}
+                            {product.badges && product.badges.length > 0 && (
+                              <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-semibold z-10">
+                                {product.badges[0]}
+                              </div>
+                            )}
+                            {/* Stock Status */}
+                            {!product.inStock && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                <span className="text-white font-semibold text-sm">Out of Stock</span>
+                              </div>
+                            )}
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="mb-2">
+                              <span className="text-lg font-bold text-gray-900">
+                                {product.price}
+                              </span>
+                              {product.originalPrice && (
+                                <span className="text-sm text-gray-500 line-through ml-2">
+                                  {product.originalPrice}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="text-base text-gray-700 line-clamp-2 mb-4 leading-tight">
+                              {product.name}
+                            </h3>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                              }}
+                              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-sm py-2 px-6 transition-all duration-200"
+                              variant="outline"
+                              disabled={!product.inStock}
+                            >
+                              <ShoppingCart className="h-4 w-4 mr-2" />
+                              {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>

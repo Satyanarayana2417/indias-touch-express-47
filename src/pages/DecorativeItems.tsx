@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Filter, Star, ShoppingCart, Heart, Sparkles, Palette } from "lucide-react";
+import { Search, Filter, Star, ShoppingCart, Heart, Sparkles, Palette, Grid, List } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
@@ -15,7 +16,9 @@ import { toast } from "@/hooks/use-toast";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const DecorativeItems = () => {
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -43,7 +46,16 @@ const DecorativeItems = () => {
     if (isInWishlist(productId.toString())) {
       await removeFromWishlist(productId.toString());
     } else {
-      await addToWishlist(productId.toString());
+      await addToWishlist({
+        id: productId.toString(),
+        name: decorativeProducts.find(p => p.id === productId)?.name || '',
+        price: decorativeProducts.find(p => p.id === productId)?.price || '',
+        image: decorativeProducts.find(p => p.id === productId)?.image || '',
+        originalPrice: decorativeProducts.find(p => p.id === productId)?.originalPrice,
+        inStock: decorativeProducts.find(p => p.id === productId)?.inStock || false,
+        rating: decorativeProducts.find(p => p.id === productId)?.rating || 0,
+        reviews: decorativeProducts.find(p => p.id === productId)?.reviews || 0
+      });
     }
   };
 
@@ -272,178 +284,280 @@ const DecorativeItems = () => {
 
               {/* Main Content */}
               <div className="flex-1">
-                {/* Mobile Category Filter */}
-                <div className="lg:hidden mb-4">
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name} ({category.count})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Toolbar */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 items-start sm:items-center justify-between">
-                  <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:flex-initial">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-soft-gray" />
-                      <Input
-                        placeholder="Search decorative items..."
-                        className="pl-10 w-full sm:w-64"
-                      />
-                    </div>
-                    <Button variant="outline" size="sm" className="hidden sm:flex">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filter
-                    </Button>
-                  </div>
-
-                  <Select defaultValue="featured">
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="featured">Featured</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                      <SelectItem value="newest">Newest Arrivals</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Products Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-                  {filteredProducts.map((product) => (
-                    <Card 
-                      key={product.id} 
-                      className="group relative overflow-hidden border hover:shadow-luxury transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <CardContent className="p-0">
-                        {/* Product Image */}
-                        <div className="relative overflow-hidden">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-40 sm:h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          
-                          {/* Badges */}
-                          <div className="absolute top-1 left-1 sm:top-2 sm:left-2 md:top-3 md:left-3 space-y-1">
-                            {product.badges.map((badge, idx) => (
-                              <div key={idx} className="bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[9px] sm:text-xs font-semibold">
-                                {badge}
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {/* Stock Status */}
-                          {!product.inStock && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <span className="text-white font-semibold">Out of Stock</span>
-                            </div>
-                          )}
-
-                          {/* Wishlist Button */}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 rounded-full bg-white/90 hover:bg-white text-soft-gray hover:text-red-500 transition-colors"
-                            onClick={(e) => handleWishlistToggle(e, product.id)}
-                          >
-                            <Heart 
-                              className={`h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 transition-colors ${
-                                isInWishlist(product.id.toString()) 
-                                  ? 'text-red-500 fill-red-500' 
-                                  : 'text-soft-gray hover:text-red-500'
-                              }`} 
-                            />
-                          </Button>
-
-                          {/* Quick Add to Cart */}
-                          {product.inStock && (
-                            <div className="absolute inset-x-1 bottom-1 sm:inset-x-2 sm:bottom-2 md:inset-x-3 md:bottom-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                              <Button 
-                                size="sm" 
-                                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-[10px] sm:text-xs py-1 sm:py-1.5"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAddToCart(product);
-                                }}
-                              >
-                                <ShoppingCart className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 mr-1 sm:mr-2" />
-                                Add to Cart
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Product Info */}
-                        <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
+                {/* Mobile Filters */}
+                <div className="lg:hidden mb-6">
+                  <div className="flex gap-4 items-center">
+                    <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" className="flex-1">
+                          <Filter className="h-4 w-4 mr-2" />
+                          Categories
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="w-80">
+                        <SheetHeader>
+                          <SheetTitle>Filter Products</SheetTitle>
+                          <SheetDescription>
+                            Choose categories to filter decorative items
+                          </SheetDescription>
+                        </SheetHeader>
+                        
+                        <div className="mt-6 space-y-6 pb-6">
+                          {/* Categories */}
                           <div>
-                            <h3 className="font-semibold text-primary line-clamp-1 mb-1 text-xs sm:text-sm md:text-base">
-                              {product.name}
+                            <h3 className="font-semibold text-primary mb-4 flex items-center justify-between">
+                              Categories
+                              {selectedCategory !== "all" && (
+                                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                  1 Selected
+                                </span>
+                              )}
                             </h3>
-                            <p className="text-[10px] sm:text-xs md:text-sm text-soft-gray line-clamp-2 mb-1 sm:mb-2">
-                              {product.description}
-                            </p>
-                            <p className="text-[9px] sm:text-xs md:text-sm text-secondary font-medium">
-                              By {product.artisan}
-                            </p>
-                          </div>
-
-                          {/* Features */}
-                          <div className="flex flex-wrap gap-1">
-                            {product.features.slice(0, 2).map((feature, idx) => (
-                              <span key={idx} className="text-[8px] sm:text-[10px] md:text-xs bg-muted text-muted-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full">
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-
-                          {/* Rating */}
-                          <div className="flex items-center space-x-1">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 ${
-                                    i < Math.floor(product.rating)
-                                      ? 'text-secondary fill-current'
-                                      : 'text-gray-300'
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {categories.map((category) => (
+                                <button
+                                  key={category.id}
+                                  onClick={() => {
+                                    setSelectedCategory(category.id);
+                                    setTimeout(() => setIsFilterOpen(false), 150);
+                                  }}
+                                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                                    selectedCategory === category.id
+                                      ? 'bg-primary text-primary-foreground shadow-sm'
+                                      : 'hover:bg-muted border border-gray-200 hover:border-gray-300'
                                   }`}
-                                />
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">{category.name}</span>
+                                    <span className={`text-xs ${
+                                      selectedCategory === category.id ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                    }`}>
+                                      ({category.count})
+                                    </span>
+                                  </div>
+                                </button>
                               ))}
                             </div>
-                            <span className="text-[10px] sm:text-xs md:text-sm text-soft-gray">
-                              {product.rating} ({product.reviews})
-                            </span>
                           </div>
 
-                          {/* Price */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-1 sm:space-x-2">
-                              <span className="text-sm sm:text-base md:text-lg font-bold text-primary">
-                                {product.price}
-                              </span>
-                              <span className="text-[10px] sm:text-xs md:text-sm text-soft-gray line-through">
-                                {product.originalPrice}
-                              </span>
+                          {/* Special Offers in Filter */}
+                          <div>
+                            <h3 className="font-semibold text-primary mb-4">Special Offers</h3>
+                            <div className="space-y-3">
+                              <div className="p-3 bg-secondary/10 rounded-lg">
+                                <p className="text-sm font-medium text-primary">Free Shipping</p>
+                                <p className="text-xs text-soft-gray">On orders over ₹4,000</p>
+                              </div>
+                              <div className="p-3 bg-red-50 rounded-lg">
+                                <p className="text-sm font-medium text-red-600">Limited Time</p>
+                                <p className="text-xs text-red-500">20% off handcrafted items</p>
+                              </div>
                             </div>
-                            <span className="text-[8px] sm:text-[10px] md:text-xs bg-red-100 text-red-600 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-semibold">
-                              Save {Math.round(((parseFloat(product.originalPrice.replace('$', '')) - parseFloat(product.price.replace('$', ''))) / parseFloat(product.originalPrice.replace('$', ''))) * 100)}%
-                            </span>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+
+                        {/* Filter Actions */}
+                        <div className="border-t pt-4 space-y-4">
+                          <div className="flex gap-3">
+                            <Button 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => {
+                                setSelectedCategory("all");
+                              }}
+                            >
+                              Clear All
+                            </Button>
+                            <Button 
+                              className="flex-1"
+                              onClick={() => setIsFilterOpen(false)}
+                            >
+                              Apply Filters
+                            </Button>
+                          </div>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+
+                  <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                    <Select defaultValue="featured">
+                      <SelectTrigger className="w-36 sm:w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="featured">Featured</SelectItem>
+                        <SelectItem value="price-low">Price: Low to High</SelectItem>
+                        <SelectItem value="price-high">Price: High to Low</SelectItem>
+                        <SelectItem value="rating">Highest Rated</SelectItem>
+                        <SelectItem value="newest">Newest Arrivals</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Products Count and View Toggle */}
+                <div className="flex justify-between items-center mb-6">
+                  <p className="text-sm text-gray-600">
+                    Showing {filteredProducts.length} products
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Products Grid/List */}
+                <div className={viewMode === 'grid' 
+                  ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6'
+                  : 'space-y-4'
+                }>
+                  {filteredProducts.map((product) => (
+                    <div 
+                      key={product.id} 
+                      className={`group cursor-pointer ${
+                        viewMode === 'list' ? 'flex flex-row bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4' : ''
+                      }`}
+                      onClick={() => handleProductClick(product.id)}
+                    >
+                      {viewMode === 'grid' ? (
+                        // Grid View
+                        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                          <div className="relative overflow-hidden bg-gray-50">
+                            <button 
+                              className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
+                              onClick={(e) => handleWishlistToggle(e, product.id)}
+                            >
+                              <Heart 
+                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+                                  isInWishlist(product.id.toString()) 
+                                    ? 'text-red-500 fill-red-500' 
+                                    : 'text-gray-600 hover:text-red-500'
+                                }`} 
+                              />
+                            </button>
+                            {/* Badges */}
+                            {product.badges && product.badges.length > 0 && (
+                              <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold z-10">
+                                {product.badges[0]}
+                              </div>
+                            )}
+                            {/* Stock Status */}
+                            {!product.inStock && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                <span className="text-white font-semibold text-sm">Out of Stock</span>
+                              </div>
+                            )}
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-32 sm:h-40 md:h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="p-2 sm:p-3">
+                            <div className="mb-2">
+                              <span className="text-sm sm:text-lg font-bold text-gray-900">
+                                {product.price}
+                              </span>
+                              {product.originalPrice && (
+                                <span className="text-xs sm:text-sm text-gray-500 line-through ml-1 sm:ml-2">
+                                  {product.originalPrice}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="text-xs sm:text-sm text-gray-700 line-clamp-2 mb-2 sm:mb-3 leading-tight">
+                              {product.name}
+                            </h3>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                              }}
+                              className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
+                              variant="outline"
+                              disabled={!product.inStock}
+                            >
+                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              {product.inStock ? 'Add' : 'Out of Stock'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        // List View
+                        <>
+                          <div className="relative w-32 h-32 flex-shrink-0 mr-4 bg-gray-50 rounded-lg overflow-hidden">
+                            <button 
+                              className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
+                              onClick={(e) => handleWishlistToggle(e, product.id)}
+                            >
+                              <Heart 
+                                className={`w-4 h-4 transition-colors ${
+                                  isInWishlist(product.id.toString()) 
+                                    ? 'text-red-500 fill-red-500' 
+                                    : 'text-gray-600 hover:text-red-500'
+                                }`} 
+                              />
+                            </button>
+                            {/* Badges */}
+                            {product.badges && product.badges.length > 0 && (
+                              <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-semibold z-10">
+                                {product.badges[0]}
+                              </div>
+                            )}
+                            {/* Stock Status */}
+                            {!product.inStock && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                <span className="text-white font-semibold text-sm">Out of Stock</span>
+                              </div>
+                            )}
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="mb-2">
+                              <span className="text-lg font-bold text-gray-900">
+                                {product.price}
+                              </span>
+                              {product.originalPrice && (
+                                <span className="text-sm text-gray-500 line-through ml-2">
+                                  {product.originalPrice}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="text-base text-gray-700 line-clamp-2 mb-4 leading-tight">
+                              {product.name}
+                            </h3>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                              }}
+                              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-sm py-2 px-6 transition-all duration-200"
+                              variant="outline"
+                              disabled={!product.inStock}
+                            >
+                              <ShoppingCart className="h-4 w-4 mr-2" />
+                              {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   ))}
                 </div>
 
@@ -454,7 +568,7 @@ const DecorativeItems = () => {
                     variant="outline"
                     className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold px-8"
                   >
-                    Explore More Crafts
+                    Load More Products
                   </Button>
                 </div>
               </div>
