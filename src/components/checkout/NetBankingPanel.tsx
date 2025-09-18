@@ -54,15 +54,17 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
     return baseUrls[bankCode] || '#';
   };
 
-  // Bank list with popular Indian banks and improved logos
+  // Bank list with popular Indian banks and image logos
   const banks: Bank[] = [
     {
       id: 'sbi',
       name: 'State Bank of India',
       code: 'SBI',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-700 to-blue-800 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          SBI
+        <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center shadow-md">
+          <div className="w-4 h-4 bg-white rounded-sm flex items-center justify-center">
+            <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+          </div>
         </div>
       ),
       popular: true,
@@ -72,8 +74,13 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'HDFC Bank',
       code: 'HDFC',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-red-700 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          HDFC
+        <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center shadow-md">
+          <div className="grid grid-cols-2 gap-0.5 w-4 h-4">
+            <div className="bg-white w-1.5 h-1.5 rounded-sm"></div>
+            <div className="bg-white w-1.5 h-1.5 rounded-sm"></div>
+            <div className="bg-white w-1.5 h-1.5 rounded-sm"></div>
+            <div className="bg-white w-1.5 h-1.5 rounded-sm"></div>
+          </div>
         </div>
       ),
       popular: true,
@@ -83,8 +90,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'ICICI Bank',
       code: 'ICICI',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          ICICI
+        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md">
+          <div className="w-5 h-1 bg-white rounded-full"></div>
         </div>
       ),
       popular: true,
@@ -94,8 +101,11 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'Kotak Mahindra Bank',
       code: 'KOTAK',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-red-700 to-red-800 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          KMB
+        <div className="w-8 h-8 bg-red-800 rounded-full flex items-center justify-center shadow-md">
+          <div className="flex space-x-0.5">
+            <div className="w-1 h-4 bg-white rounded-full"></div>
+            <div className="w-1 h-4 bg-white rounded-full"></div>
+          </div>
         </div>
       ),
     },
@@ -104,8 +114,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'Axis Bank',
       code: 'AXIS',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          AXIS
+        <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center shadow-md">
+          <div className="w-4 h-4 border-2 border-white rounded-sm transform rotate-45"></div>
         </div>
       ),
       popular: true,
@@ -115,8 +125,10 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'Federal Bank',
       code: 'FEDERAL',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-green-600 to-green-700 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          FED
+        <div className="w-8 h-8 bg-gray-500 rounded flex items-center justify-center shadow-md">
+          <div className="w-4 h-3 bg-white rounded-sm flex items-center justify-center">
+            <div className="text-gray-500 text-[8px] font-bold">F</div>
+          </div>
         </div>
       ),
     },
@@ -125,8 +137,17 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'Indian Overseas Bank',
       code: 'IOB',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          IOB
+        <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center shadow-md">
+          <div className="flex flex-col space-y-0.5">
+            <div className="flex space-x-0.5">
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+            </div>
+            <div className="flex space-x-0.5">
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+            </div>
+          </div>
         </div>
       ),
     },
@@ -135,8 +156,10 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'Indian Bank',
       code: 'INDIANBANK',
       logoIcon: (
-        <div className="w-8 h-8 bg-gradient-to-br from-green-700 to-green-800 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-          IB
+        <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
+          </div>
         </div>
       ),
     },
@@ -189,9 +212,6 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
           {isMobile ? (
             // Mobile Dropdown
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                Select Bank
-              </Label>
               <Select value={selectedBank} onValueChange={handleBankSelect}>
                 <SelectTrigger className="w-full h-12">
                   <SelectValue placeholder="Choose your bank">
@@ -246,7 +266,7 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
                       className={`
                         flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors
                         ${selectedBank === bank.id 
-                          ? 'border-blue-500 bg-blue-50' 
+                          ? 'border-gray-500 bg-white shadow-sm' 
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         }
                       `}
@@ -255,7 +275,7 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
                         <RadioGroupItem
                           value={bank.id}
                           id={bank.id}
-                          className={selectedBank === bank.id ? 'border-blue-500' : ''}
+                          className={selectedBank === bank.id ? 'border-gray-500' : ''}
                         />
                         
                         <div className="flex items-center gap-3 flex-1">

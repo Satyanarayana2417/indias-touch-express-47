@@ -81,7 +81,7 @@ const PaymentMethodsPanel: React.FC<PaymentMethodsPanelProps> = ({
               className={`
                 relative cursor-pointer border-b border-gray-100 last:border-b-0
                 ${!method.available ? 'opacity-50 cursor-not-allowed' : ''}
-                ${selectedPayment === method.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50'}
+                ${selectedPayment === method.id ? 'bg-gray-50 border-l-4 border-l-gray-500' : 'hover:bg-gray-50'}
               `}
               onClick={() => method.available && onPaymentSelect(method.id)}
             >
@@ -90,7 +90,7 @@ const PaymentMethodsPanel: React.FC<PaymentMethodsPanelProps> = ({
                 <div className={`
                   w-5 h-5 rounded-full border-2 flex items-center justify-center
                   ${selectedPayment === method.id 
-                    ? 'border-blue-500 bg-blue-500' 
+                    ? 'border-gray-500 bg-gray-500' 
                     : 'border-gray-300'
                   }
                 `}>

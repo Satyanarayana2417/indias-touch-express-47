@@ -106,15 +106,15 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
 
         {/* Delivery Information */}
         {deliveryInfo && (
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <span className="font-semibold text-blue-800">Estimated Delivery</span>
+              <Clock className="h-5 w-5 text-gray-600" />
+              <span className="font-semibold text-gray-800">Estimated Delivery</span>
             </div>
-            <p className="text-blue-700 font-medium">
+            <p className="text-gray-700 font-medium">
               Within 40-50 minutes
             </p>
-            <p className="text-sm text-blue-600">
+            <p className="text-sm text-gray-600">
               Expected between {deliveryInfo.timeRange}
             </p>
           </div>
@@ -146,7 +146,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
           <h4 className="font-semibold mb-2">What happens next?</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
               <span>Order confirmation email sent</span>
             </div>
             <div className="flex items-center gap-2">

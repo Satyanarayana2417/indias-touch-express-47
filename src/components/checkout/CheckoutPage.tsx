@@ -173,15 +173,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
           />
         )}
 
-        {selectedPayment === 'netbanking' && (
-          <NetBankingPanel
-            total={total}
-            onPayment={handleNetBankingPayment}
-            isProcessing={isProcessing}
-            isMobile={true}
-          />
-        )}
-        
         <OrderSummaryPanel
           subtotal={subtotal}
           platformFee={platformFee}

@@ -13,6 +13,7 @@ interface Product {
   reviews: number;
   category: string;
   inStock: boolean;
+  badge?: string;
 }
 
 interface ProductGridProps {
@@ -35,10 +36,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   isInWishlist
 }) => {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(price);
+    return `₹${price.toLocaleString('en-IN')}`;
   };
 
   return (
@@ -48,7 +46,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         <p className="text-sm text-gray-600">
           Showing {products.length} products
         </p>
-        <div className="flex items-center space-x-2">
+        <div className="hidden sm:flex items-center space-x-2">
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
@@ -68,7 +66,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
       {/* Products Grid/List */}
       <div className={viewMode === 'grid' 
-        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+        ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6'
         : 'space-y-4'
       }>
         {products.map((product) => (
@@ -79,12 +77,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             }`}
             onClick={() => onProductClick(product.id)}
           >
-            <CardContent className={`p-4 ${viewMode === 'list' ? 'flex w-full' : ''}`}>
+            <CardContent className={`p-2 sm:p-3 md:p-4 ${viewMode === 'list' ? 'flex w-full' : ''}`}>
               {/* Product Image */}
               <div className={`relative bg-gray-100 rounded-lg overflow-hidden ${
                 viewMode === 'list' 
                   ? 'w-32 h-32 flex-shrink-0 mr-4' 
-                  : 'aspect-square mb-4'
+                  : 'aspect-square mb-2 sm:mb-3 md:mb-4'
               }`}>
                 <img
                   src={product.image}
@@ -92,14 +90,21 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 />
                 
+                {/* Product Badge */}
+                {product.badge && (
+                  <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 md:top-2 md:left-2 px-1.5 py-0.5 sm:px-2 sm:py-1 bg-yellow-500 text-black text-[9px] sm:text-[10px] md:text-xs font-semibold rounded-full">
+                    {product.badge}
+                  </div>
+                )}
+                
                 {/* Wishlist Button */}
                 <button
                   onClick={(e) => onWishlistToggle(e, product.id)}
-                  className={`absolute top-2 right-2 p-2 rounded-full bg-white shadow-md hover:scale-110 transition-transform ${
+                  className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 md:top-2 md:right-2 p-1 sm:p-1.5 md:p-2 rounded-full bg-white shadow-md hover:scale-110 transition-transform ${
                     isInWishlist(String(product.id)) ? 'text-red-500' : 'text-gray-400'
                   }`}
                 >
-                  <Heart className={`h-4 w-4 ${isInWishlist(String(product.id)) ? 'fill-current' : ''}`} />
+                  <Heart className={`h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 ${isInWishlist(String(product.id)) ? 'fill-current' : ''}`} />
                 </button>
 
                 {/* Out of Stock Overlay */}
@@ -112,39 +117,39 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
               {/* Product Info */}
               <div className={`${viewMode === 'list' ? 'flex-1' : ''}`}>
-                <h3 className={`font-semibold text-gray-900 mb-2 line-clamp-2 ${
-                  viewMode === 'list' ? 'text-lg' : 'text-sm'
+                <h3 className={`font-semibold text-gray-900 mb-1 sm:mb-1.5 md:mb-2 line-clamp-2 ${
+                  viewMode === 'list' ? 'text-lg' : 'text-xs sm:text-sm md:text-base'
                 }`}>
                   {product.name}
                 </h3>
 
                 {/* Rating */}
-                <div className="flex items-center space-x-1 mb-2">
+                <div className="flex items-center space-x-1 mb-1 sm:mb-1.5 md:mb-2">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-3 w-3 ${
+                      className={`h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3 ${
                         i < Math.floor(product.rating)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
                     />
                   ))}
-                  <span className="text-xs text-gray-600 ml-1">
+                  <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-600 ml-1">
                     ({product.reviews})
                   </span>
                 </div>
 
                 {/* Price */}
                 <div className={`flex items-center justify-between ${
-                  viewMode === 'list' ? 'mb-4' : 'mb-2'
+                  viewMode === 'list' ? 'mb-4' : 'mb-1 sm:mb-1.5 md:mb-2'
                 }`}>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold text-gray-900">
+                  <div className="flex items-center space-x-1 sm:space-x-2">
+                    <span className="font-bold text-gray-900 text-[10px] sm:text-xs md:text-sm">
                       {formatPrice(product.price)}
                     </span>
                     {product.originalPrice && (
-                      <span className="text-sm text-gray-500 line-through">
+                      <span className="text-[9px] sm:text-[10px] md:text-sm text-gray-500 line-through">
                         {formatPrice(product.originalPrice)}
                       </span>
                     )}
@@ -158,12 +163,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     onAddToCart(product);
                   }}
                   disabled={!product.inStock}
-                  className={`w-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-                    viewMode === 'list' ? 'opacity-100' : ''
+                  className={`w-full transition-opacity duration-200 text-[10px] sm:text-xs md:text-sm py-1 sm:py-1.5 md:py-2 ${
+                    viewMode === 'list' 
+                      ? 'opacity-100' 
+                      : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                   }`}
                   size="sm"
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  <ShoppingCart className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 mr-1 sm:mr-1.5 md:mr-2" />
                   Add to Cart
                 </Button>
               </div>

@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronUp, Smartphone, CreditCard, Building, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PaymentData {
   method: string;
@@ -111,6 +110,80 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
     'Union Bank of India'
   ];
 
+  // Function to get bank logo with multiple format support
+  const getBankLogo = (bankName: string) => {
+    // Support multiple formats: try different extensions
+    const bankLogos: { [key: string]: string[] } = {
+      'State Bank of India': [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwx-VfRhZL8SWCoDgyW1UXcrjJUNDDaZz_4MT6Dj-K-jXf7WdL8Md0Rt4UcLNFSPAOUU4&usqp=CAU',
+        '/bank-logos/sbi-logo.png',
+        '/bank-logos/sbi-logo.jpg',
+        '/bank-logos/sbi-logo.jpeg',
+        '/bank-logos/sbi-logo.svg',
+        '/bank-logos/sbi-logo.webp'
+      ],
+      'HDFC Bank': [
+        'https://w7.pngwing.com/pngs/636/81/png-transparent-hdfc-thumbnail-bank-logos-thumbnail.png',
+        '/bank-logos/hdfc-logo.png',
+        '/bank-logos/hdfc-logo.jpg',
+        '/bank-logos/hdfc-logo.jpeg',
+        '/bank-logos/hdfc-logo.svg',
+        '/bank-logos/hdfc-logo.webp'
+      ],
+      'ICICI Bank': [
+        'https://companieslogo.com/img/orig/IBN-af38b5c0.png?t=1720244492',
+        '/bank-logos/icici-logo.png',
+        '/bank-logos/icici-logo.jpg',
+        '/bank-logos/icici-logo.jpeg',
+        '/bank-logos/icici-logo.svg',
+        '/bank-logos/icici-logo.webp'
+      ],
+      'Axis Bank': [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWxzSXOpPGpzylGQztjzV4pqXqNvHaUEs7_uEW5TAK03PC8emEjOuAS9O-FSa9hcyux_Q&usqp=CAU',
+        '/bank-logos/axis-logo.png',
+        '/bank-logos/axis-logo.jpg',
+        '/bank-logos/axis-logo.jpeg',
+        '/bank-logos/axis-logo.svg',
+        '/bank-logos/axis-logo.webp'
+      ],
+      'Punjab National Bank': [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkEVvhCbReaVLyNPYE-cVo_JVYQloPCzLAMw&s',
+        '/bank-logos/pnb-logo.png',
+        '/bank-logos/pnb-logo.jpg',
+        '/bank-logos/pnb-logo.jpeg',
+        '/bank-logos/pnb-logo.svg',
+        '/bank-logos/pnb-logo.webp'
+      ],
+      'Bank of Baroda': [
+        'https://www.vhv.rs/dpng/d/109-1097307_bank-of-baroda-png-logo-of-bank-of.png',
+        '/bank-logos/bob-logo.png',
+        '/bank-logos/bob-logo.jpg',
+        '/bank-logos/bob-logo.jpeg',
+        '/bank-logos/bob-logo.svg',
+        '/bank-logos/bob-logo.webp'
+      ],
+      'Canara Bank': [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThO2fDfGbNevq1Z8U2Zj3XJbOh_1_W4hQo-Q&s',
+        '/bank-logos/canara-logo.png',
+        '/bank-logos/canara-logo.jpg',
+        '/bank-logos/canara-logo.jpeg',
+        '/bank-logos/canara-logo.svg',
+        '/bank-logos/canara-logo.webp'
+      ],
+      'Union Bank of India': [
+        'https://companieslogo.com/img/orig/UNIONBANK.NS-5bba728d.png?t=1720244494',
+        '/bank-logos/union-logo.png',
+        '/bank-logos/union-logo.jpg',
+        '/bank-logos/union-logo.jpeg',
+        '/bank-logos/union-logo.svg',
+        '/bank-logos/union-logo.webp'
+      ]
+    };
+    
+    // Return the first available format (PNG by default)
+    return bankLogos[bankName]?.[0] || null;
+  };
+
   const renderPaymentForm = (method: any) => {
     switch (method.id) {
       case 'upi':
@@ -202,26 +275,49 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
 
       case 'netbanking':
         return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Your Bank
-              </label>
-              <Select value={selectedBank} onValueChange={setSelectedBank}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose your bank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {popularBanks.map((bank) => (
-                    <SelectItem key={bank} value={bank}>
-                      {bank}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              {popularBanks.map((bank) => {
+                const logoSrc = getBankLogo(bank);
+                return (
+                  <Button
+                    key={bank}
+                    variant={selectedBank === bank ? "default" : "outline"}
+                    className={`w-full justify-start text-left h-auto py-3 px-4 ${
+                      selectedBank === bank ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setSelectedBank(bank)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {logoSrc ? (
+                        <img 
+                          src={logoSrc} 
+                          alt={`${bank} logo`}
+                          className="w-6 h-6 object-contain rounded"
+                          onError={(e) => {
+                            // Fallback to initial letter if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      {/* Fallback to bank initial if logo not available or fails to load */}
+                      <div 
+                        className={`w-6 h-6 rounded-full ${logoSrc ? 'hidden' : 'flex'} items-center justify-center text-xs font-bold bg-gray-200 text-gray-600`}
+                        style={{ display: logoSrc ? 'none' : 'flex' }}
+                      >
+                        {bank.charAt(0)}
+                      </div>
+                      <span className="text-sm font-medium">{bank}</span>
+                    </div>
+                  </Button>
+                );
+              })}
             </div>
             <Button 
-              className="w-full"
+              className="w-full mt-4"
               disabled={!selectedBank}
               onClick={() => handlePaymentSubmit('netbanking')}
             >
@@ -260,7 +356,7 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
           <div
             className={`
               cursor-pointer transition-colors duration-200
-              ${expandedMethod === method.id ? 'bg-blue-50' : 'hover:bg-gray-50'}
+              ${expandedMethod === method.id ? 'bg-gray-50' : 'hover:bg-gray-50'}
               ${!method.available ? 'opacity-50 cursor-not-allowed' : ''}
             `}
             onClick={() => method.available && toggleExpanded(method.id)}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProductFilters from "@/components/shop/ProductFilters";
@@ -8,6 +8,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
 import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import featuredImage from "@/assets/featured-products.jpg";
 
 interface Product {
@@ -20,6 +21,7 @@ interface Product {
   reviews: number;
   category: string;
   inStock: boolean;
+  badge?: string;
 }
 
 const ShopProducts = () => {
@@ -35,51 +37,64 @@ const ShopProducts = () => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  // Force grid view on mobile for better experience
+  useEffect(() => {
+    if (isMobile && viewMode === "list") {
+      setViewMode("grid");
+    }
+  }, [isMobile, viewMode]);
 
   // Mock products data
   const allProducts: Product[] = [
     {
       id: 1,
-      name: "Premium Basmati Rice",
-      price: 899,
-      originalPrice: 999,
+      name: "Premium Basmati Rice (5kg)",
+      price: 1999,
+      originalPrice: 2399,
       image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500",
       rating: 4.5,
       reviews: 128,
       category: "grains",
-      inStock: true
+      inStock: true,
+      badge: "Best Seller"
     },
     {
       id: 2,
-      name: "Organic Turmeric Powder",
-      price: 299,
-      originalPrice: 349,
+      name: "Organic Turmeric Powder (500g)",
+      price: 1429,
+      originalPrice: 1689,
       image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500",
       rating: 4.7,
       reviews: 95,
       category: "spices",
-      inStock: true
+      inStock: true,
+      badge: "Organic"
     },
     {
       id: 3,
-      name: "Alphonso Mango Pulp",
-      price: 199,
+      name: "Green Cardamom Pods (100g)",
+      price: 2779,
+      originalPrice: 3289,
       image: "https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=500",
       rating: 4.6,
       reviews: 67,
-      category: "snacks",
-      inStock: true
+      category: "spices",
+      inStock: true,
+      badge: "Premium"
     },
     {
       id: 4,
-      name: "Traditional Brass Diya Set",
-      price: 799,
-      originalPrice: 899,
+      name: "Toor Dal (Split Pigeon Peas) - 2kg",
+      price: 1099,
+      originalPrice: 1349,
       image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500",
       rating: 4.4,
       reviews: 42,
-      category: "decorative",
-      inStock: true
+      category: "grains",
+      inStock: true,
+      badge: "Protein Rich"
     },
     {
       id: 5,
@@ -218,17 +233,17 @@ const ShopProducts = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop Products</h1>
-          <p className="text-gray-600">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Shop Products</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Discover authentic Indian products delivered worldwide
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="flex gap-8">
+        <div className="lg:flex lg:gap-8">
           {/* Filters Sidebar */}
           <ProductFilters
             selectedCategory={selectedCategory}
@@ -245,7 +260,7 @@ const ShopProducts = () => {
           />
 
           {/* Products Grid */}
-          <div className="flex-1">
+          <div className="flex-1 mt-4 lg:mt-0">
             <ProductGrid
               products={filteredProducts}
               viewMode={viewMode}

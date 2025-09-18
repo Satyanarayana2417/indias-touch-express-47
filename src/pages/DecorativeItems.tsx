@@ -220,11 +220,11 @@ const DecorativeItems = () => {
         </section>
 
         {/* Products Section */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row gap-8">
+        <section className="py-8 sm:py-12">
+          <div className="container mx-auto px-3 sm:px-4">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
               {/* Sidebar */}
-              <aside className="lg:w-64 space-y-6">
+              <aside className="hidden lg:block lg:w-64 space-y-6">
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="font-semibold text-primary mb-4">Categories</h3>
@@ -272,24 +272,40 @@ const DecorativeItems = () => {
 
               {/* Main Content */}
               <div className="flex-1">
+                {/* Mobile Category Filter */}
+                <div className="lg:hidden mb-4">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name} ({category.count})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Toolbar */}
-                <div className="flex flex-col md:flex-row gap-4 mb-8 items-start md:items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="relative">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 items-start sm:items-center justify-between">
+                  <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:flex-initial">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-soft-gray" />
                       <Input
                         placeholder="Search decorative items..."
-                        className="pl-10 w-64"
+                        className="pl-10 w-full sm:w-64"
                       />
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="hidden sm:flex">
                       <Filter className="h-4 w-4 mr-2" />
                       Filter
                     </Button>
                   </div>
 
                   <Select defaultValue="featured">
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-full sm:w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -303,7 +319,7 @@ const DecorativeItems = () => {
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                   {filteredProducts.map((product) => (
                     <Card 
                       key={product.id} 
@@ -316,13 +332,13 @@ const DecorativeItems = () => {
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-40 sm:h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           
                           {/* Badges */}
-                          <div className="absolute top-3 left-3 space-y-1">
+                          <div className="absolute top-1 left-1 sm:top-2 sm:left-2 md:top-3 md:left-3 space-y-1">
                             {product.badges.map((badge, idx) => (
-                              <div key={idx} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-semibold">
+                              <div key={idx} className="bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[9px] sm:text-xs font-semibold">
                                 {badge}
                               </div>
                             ))}
@@ -339,11 +355,11 @@ const DecorativeItems = () => {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 hover:bg-white text-soft-gray hover:text-red-500 transition-colors"
+                            className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 rounded-full bg-white/90 hover:bg-white text-soft-gray hover:text-red-500 transition-colors"
                             onClick={(e) => handleWishlistToggle(e, product.id)}
                           >
                             <Heart 
-                              className={`h-4 w-4 transition-colors ${
+                              className={`h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 transition-colors ${
                                 isInWishlist(product.id.toString()) 
                                   ? 'text-red-500 fill-red-500' 
                                   : 'text-soft-gray hover:text-red-500'
@@ -353,16 +369,16 @@ const DecorativeItems = () => {
 
                           {/* Quick Add to Cart */}
                           {product.inStock && (
-                            <div className="absolute inset-x-3 bottom-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            <div className="absolute inset-x-1 bottom-1 sm:inset-x-2 sm:bottom-2 md:inset-x-3 md:bottom-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                               <Button 
                                 size="sm" 
-                                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-[10px] sm:text-xs py-1 sm:py-1.5"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleAddToCart(product);
                                 }}
                               >
-                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                <ShoppingCart className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 mr-1 sm:mr-2" />
                                 Add to Cart
                               </Button>
                             </div>
@@ -370,15 +386,15 @@ const DecorativeItems = () => {
                         </div>
 
                         {/* Product Info */}
-                        <div className="p-4 space-y-3">
+                        <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
                           <div>
-                            <h3 className="font-semibold text-primary line-clamp-1 mb-1">
+                            <h3 className="font-semibold text-primary line-clamp-1 mb-1 text-xs sm:text-sm md:text-base">
                               {product.name}
                             </h3>
-                            <p className="text-sm text-soft-gray line-clamp-2 mb-2">
+                            <p className="text-[10px] sm:text-xs md:text-sm text-soft-gray line-clamp-2 mb-1 sm:mb-2">
                               {product.description}
                             </p>
-                            <p className="text-xs text-secondary font-medium">
+                            <p className="text-[9px] sm:text-xs md:text-sm text-secondary font-medium">
                               By {product.artisan}
                             </p>
                           </div>
@@ -386,7 +402,7 @@ const DecorativeItems = () => {
                           {/* Features */}
                           <div className="flex flex-wrap gap-1">
                             {product.features.slice(0, 2).map((feature, idx) => (
-                              <span key={idx} className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                              <span key={idx} className="text-[8px] sm:text-[10px] md:text-xs bg-muted text-muted-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full">
                                 {feature}
                               </span>
                             ))}
@@ -398,7 +414,7 @@ const DecorativeItems = () => {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-4 w-4 ${
+                                  className={`h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 ${
                                     i < Math.floor(product.rating)
                                       ? 'text-secondary fill-current'
                                       : 'text-gray-300'
@@ -406,22 +422,22 @@ const DecorativeItems = () => {
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-soft-gray">
+                            <span className="text-[10px] sm:text-xs md:text-sm text-soft-gray">
                               {product.rating} ({product.reviews})
                             </span>
                           </div>
 
                           {/* Price */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-lg font-bold text-primary">
+                            <div className="flex items-center space-x-1 sm:space-x-2">
+                              <span className="text-sm sm:text-base md:text-lg font-bold text-primary">
                                 {product.price}
                               </span>
-                              <span className="text-sm text-soft-gray line-through">
+                              <span className="text-[10px] sm:text-xs md:text-sm text-soft-gray line-through">
                                 {product.originalPrice}
                               </span>
                             </div>
-                            <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">
+                            <span className="text-[8px] sm:text-[10px] md:text-xs bg-red-100 text-red-600 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full font-semibold">
                               Save {Math.round(((parseFloat(product.originalPrice.replace('$', '')) - parseFloat(product.price.replace('$', ''))) / parseFloat(product.originalPrice.replace('$', ''))) * 100)}%
                             </span>
                           </div>

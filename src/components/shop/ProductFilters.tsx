@@ -140,6 +140,45 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
   return (
     <>
+      {/* Mobile Filter Bar */}
+      <div className="lg:hidden mb-4">
+        <div className="flex gap-2 items-center">
+          <Sheet open={isFilterOpen} onOpenChange={onFilterToggle}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="flex-1">
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80">
+              <SheetHeader>
+                <SheetTitle>Filters</SheetTitle>
+                <SheetDescription>
+                  Filter products by category, price, and more
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-6">
+                <FilterContent />
+              </div>
+            </SheetContent>
+          </Sheet>
+          
+          {/* Quick Sort for Mobile */}
+          <Select value={sortBy} onValueChange={onSortChange}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Desktop Filters */}
       <div className="hidden lg:block w-64 flex-shrink-0">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -149,27 +188,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterContent />
         </div>
       </div>
-
-      {/* Mobile Filter Sheet */}
-      <Sheet open={isFilterOpen} onOpenChange={onFilterToggle}>
-        <SheetTrigger asChild className="lg:hidden">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-80">
-          <SheetHeader>
-            <SheetTitle>Filters</SheetTitle>
-            <SheetDescription>
-              Filter products by category, price, and more
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6">
-            <FilterContent />
-          </div>
-        </SheetContent>
-      </Sheet>
     </>
   );
 };

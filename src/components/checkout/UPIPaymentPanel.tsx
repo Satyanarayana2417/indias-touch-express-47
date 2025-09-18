@@ -144,11 +144,11 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
       <Card className="shadow-sm">
         <CardHeader className={isMobile ? 'pb-3' : ''}>
           <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
             Add new UPI ID
             <a 
               href="#" 
-              className="ml-auto text-blue-500 text-sm hover:underline"
+              className="ml-auto text-gray-500 text-sm hover:underline"
             >
               How to find?
             </a>
@@ -185,7 +185,7 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
               <Button
                 onClick={handleVerifyUPI}
                 disabled={!upiId.trim() || isVerifying || isVerified || isProcessing}
-                className="px-6 bg-blue-600 hover:bg-blue-700"
+                className="px-6 bg-gray-600 hover:bg-gray-700"
               >
                 {isVerifying ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -203,9 +203,9 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
             <p className="text-sm text-gray-600 mb-3">Or pay directly with:</p>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { name: 'Google Pay', color: 'bg-blue-600' },
+                { name: 'Google Pay', color: 'bg-gray-600' },
                 { name: 'PhonePe', color: 'bg-purple-600' },
-                { name: 'Paytm', color: 'bg-blue-500' }
+                { name: 'Paytm', color: 'bg-gray-500' }
               ].map((app) => (
                 <Button
                   key={app.name}
@@ -232,7 +232,7 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowQRCode(!showQRCode)}
-                className="text-blue-500 hover:text-blue-600"
+                className="text-gray-500 hover:text-gray-600"
               >
                 <QrCode className="h-4 w-4 mr-1" />
                 {showQRCode ? 'Hide QR' : 'Show QR'}
@@ -240,7 +240,7 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
             </div>
             
             {showQRCode && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 text-center border border-blue-100">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 text-center border border-gray-100">
                 {qrCodeDataURL ? (
                   <div className="space-y-3">
                     <div className="bg-white p-3 rounded-lg inline-block shadow-sm">
@@ -282,7 +282,7 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-48">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
                   </div>
                 )}
               </div>
