@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import ProductFilters from "@/components/shop/ProductFilters";
 import ProductGrid from "@/components/shop/ProductGrid";
@@ -227,6 +229,17 @@ const ShopProducts = () => {
   return (
     <Layout>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        {/* Mobile Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 md:hidden"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+
         {/* Page Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Shop Products</h1>

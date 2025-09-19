@@ -149,6 +149,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
           onPaymentSelect={handlePaymentSelect}
           isMobile={true}
           onPaymentComplete={handlePayment}
+          total={total}
         />
         
         {selectedPayment === 'upi' && (

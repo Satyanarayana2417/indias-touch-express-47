@@ -27,7 +27,7 @@ const GridHero = () => {
           {/* Left Column Card 1 - Top Card (Medium Size) */}
           <article className={`${cardBase} lg:[grid-column:1/4] lg:[grid-row:1/3] hover:transform hover:scale-[1.02] hover:-translate-y-1`}> 
             <div className="relative w-full h-48 md:h-56 lg:h-full">
-              <img src="https://plus.unsplash.com/premium_photo-1669130744503-4939a5bcef43?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c3BpY2VzfGVufDB8fDB8fHww" alt="Free spice sample with aromatic Indian spices" className={imageBase} />
+              <img src="https://i.ibb.co/xq9sCMrW/IMG-20250919-183525.webp" alt="Free spice sample with aromatic Indian spices" className={imageBase} />
               <div className={`${overlayBase} bg-gradient-to-t from-black/40 to-transparent`}></div>
               <div className={`${innerBase} justify-end text-white`}> 
                 <h3 className="font-serif font-bold text-lg leading-snug">Shop from India,

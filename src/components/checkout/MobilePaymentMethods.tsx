@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, Smartphone, CreditCard, Building, Wallet } from 'lucide-react';
+import { ChevronDown, ChevronUp, Smartphone, CreditCard, Building, Wallet, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -19,12 +19,14 @@ interface MobilePaymentMethodsProps {
   selectedPayment: string;
   onPaymentSelect: (method: string) => void;
   onPaymentComplete?: (paymentData: PaymentData) => void;
+  total?: number;
 }
 
 const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
   selectedPayment,
   onPaymentSelect,
-  onPaymentComplete
+  onPaymentComplete,
+  total = 0
 }) => {
   const [expandedMethod, setExpandedMethod] = useState<string | null>(selectedPayment);
   const [upiId, setUpiId] = useState('');
@@ -33,6 +35,14 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
   const [cvv, setCvv] = useState('');
   const [cardHolderName, setCardHolderName] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
+
+  // Format price function
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+    }).format(price);
+  };
 
   const paymentMethods = [
     {
@@ -317,11 +327,12 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
               })}
             </div>
             <Button 
-              className="w-full mt-4"
+              className="w-full mt-4 h-14 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
               disabled={!selectedBank}
               onClick={() => handlePaymentSubmit('netbanking')}
             >
-              Continue to Bank
+              <Shield className="h-5 w-5 mr-2" />
+              <span className="text-base font-semibold">Pay {formatPrice(total)}</span>
             </Button>
           </div>
         );

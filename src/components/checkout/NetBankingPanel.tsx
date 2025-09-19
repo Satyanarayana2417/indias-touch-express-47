@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building, ChevronRight } from 'lucide-react';
+import { Building, ChevronRight, Shield, Info, Loader, Gift, HelpCircle } from 'lucide-react';
 
 interface NetBankingPanelProps {
   total: number;
@@ -20,6 +20,8 @@ interface Bank {
   logoIcon: React.ReactNode;
   popular?: boolean;
   gatewayUrl?: string;
+  offers?: string[];
+  cashback?: string;
 }
 
 const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
@@ -29,6 +31,21 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
   isMobile
 }) => {
   const [selectedBank, setSelectedBank] = useState<string>('');
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Load saved bank preference
+  useEffect(() => {
+    const savedBank = localStorage.getItem('preferredBank');
+    if (savedBank) {
+      setSelectedBank(savedBank);
+    }
+  }, []);
+
+  // Save bank preference when selected
+  const handleBankSelect = (bankId: string) => {
+    setSelectedBank(bankId);
+    localStorage.setItem('preferredBank', bankId);
+  };
 
   // Format price function
   const formatPrice = (price: number) => {
@@ -68,6 +85,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
         </div>
       ),
       popular: true,
+      offers: ['No transaction fees', 'Instant payment confirmation'],
+      cashback: 'Earn 1% cashback up to ₹100'
     },
     {
       id: 'hdfc',
@@ -84,6 +103,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
         </div>
       ),
       popular: true,
+      offers: ['Zero processing fees', 'SmartPay rewards'],
+      cashback: 'Get 2% cashback up to ₹200'
     },
     {
       id: 'icici',
@@ -95,6 +116,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
         </div>
       ),
       popular: true,
+      offers: ['Free transactions', 'ICICI Rewards points'],
+      cashback: 'Up to 1.5% cashback'
     },
     {
       id: 'kotak',
@@ -108,6 +131,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
           </div>
         </div>
       ),
+      offers: ['Kotak 811 benefits', 'Priority banking'],
+      cashback: 'Exclusive rewards available'
     },
     {
       id: 'axis',
@@ -119,6 +144,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
         </div>
       ),
       popular: true,
+      offers: ['AxisDirect benefits', 'No hidden charges'],
+      cashback: 'Get rewards on every transaction'
     },
     {
       id: 'federal',
@@ -131,6 +158,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
           </div>
         </div>
       ),
+      offers: ['FedMobile benefits'],
+      cashback: 'Standard cashback rates'
     },
     {
       id: 'iob',
@@ -150,6 +179,8 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
           </div>
         </div>
       ),
+      offers: ['No service charges'],
+      cashback: 'Special offers available'
     },
     {
       id: 'indianbank',
@@ -162,12 +193,10 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
           </div>
         </div>
       ),
+      offers: ['Government bank benefits'],
+      cashback: 'Loyalty rewards program'
     },
   ];
-
-  const handleBankSelect = (bankId: string) => {
-    setSelectedBank(bankId);
-  };
 
   const handlePayment = () => {
     if (selectedBank) {
@@ -193,17 +222,55 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
-          <Building className="h-5 w-5" />
-          Net Banking
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : 'text-lg'}`}>
+            <Building className={`${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`} />
+            Net Banking
+          </CardTitle>
+          <div className={`flex items-center ${isMobile ? 'gap-3' : 'gap-2'}`}>
+            {/* Security Badge */}
+            <div className={`flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-md border border-green-200 ${isMobile ? 'px-3 py-2' : 'px-2 py-1'}`}>
+              <Shield className={`${isMobile ? 'h-4 w-4' : 'h-3 w-3'}`} />
+              <span className={`font-medium ${isMobile ? 'text-sm' : 'text-xs'}`}>100% Secure</span>
+            </div>
+            {/* Help Tooltip */}
+            <Button
+              variant="outline"
+              size="sm"
+              className={`p-0 ${isMobile ? 'h-10 w-10' : 'h-8 w-8'}`}
+              onClick={() => setShowHelp(!showHelp)}
+            >
+              <HelpCircle className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Help Content */}
+        {showHelp && (
+          <div className={`bg-blue-50 border border-blue-200 rounded-lg ${isMobile ? 'mt-4 p-4' : 'mt-3 p-3'}`}>
+            <h4 className={`font-medium text-blue-900 mb-3 ${isMobile ? 'text-base' : 'text-sm'}`}>How to Pay with Net Banking:</h4>
+            <ol className={`text-blue-800 space-y-2 list-decimal list-inside ${isMobile ? 'text-sm' : 'text-xs'}`}>
+              <li>Select your bank from the list below</li>
+              <li>Click on "Pay ₹{formatPrice(total).replace('₹', '')}" button</li>
+              <li>You'll be redirected to your bank's secure website</li>
+              <li>Login with your Net Banking credentials</li>
+              <li>Confirm the payment details and complete transaction</li>
+              <li>You'll receive confirmation via SMS and email</li>
+            </ol>
+            {isMobile && (
+              <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                <p className="text-blue-800 text-sm font-medium">💡 Tip: Keep your banking app ready for faster login</p>
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className={`text-gray-600 ${isMobile ? 'text-sm' : 'text-base'} mb-1`}>
+        <div className={`text-gray-600 ${isMobile ? 'text-base mb-2' : 'text-base'} mb-1`}>
           Select your bank to proceed with Net Banking payment
         </div>
-        <div className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'} mb-4`}>
+        <div className={`text-gray-500 ${isMobile ? 'text-sm mb-6' : 'text-sm'} mb-4`}>
           All payments are secured with 256-bit SSL encryption
         </div>
 
@@ -213,7 +280,7 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
             // Mobile Dropdown
             <div>
               <Select value={selectedBank} onValueChange={handleBankSelect}>
-                <SelectTrigger className="w-full h-12">
+                <SelectTrigger className="w-full h-14 text-left border-2 border-gray-200 hover:border-gray-300 focus:border-blue-500 transition-colors">
                   <SelectValue placeholder="Choose your bank">
                     {selectedBank && (
                       <div className="flex items-center gap-3">
@@ -225,19 +292,19 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
                             {banks.find(b => b.id === selectedBank)?.name}
                           </div>
                           {banks.find(b => b.id === selectedBank)?.popular && (
-                            <div className="text-xs text-green-600">Popular</div>
+                            <div className="text-xs text-green-600 font-medium">Popular</div>
                           )}
                         </div>
                       </div>
                     )}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-80">
                   {banks.map((bank) => (
                     <SelectItem 
                       key={bank.id} 
                       value={bank.id}
-                      className="py-3"
+                      className="py-4 px-3"
                     >
                       <div className="flex items-center gap-3 w-full">
                         <div className="flex-shrink-0">
@@ -246,7 +313,10 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm">{bank.name}</div>
                           {bank.popular && (
-                            <div className="text-xs text-green-600 font-medium">Popular</div>
+                            <div className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full inline-block mt-0.5">Popular</div>
+                          )}
+                          {bank.cashback && (
+                            <div className="text-xs text-blue-600 mt-0.5">{bank.cashback}</div>
                           )}
                         </div>
                       </div>
@@ -303,50 +373,117 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
           )}
         </div>
 
-        {/* Selected Bank Pay Button */}
+        {/* Selected Bank Pay Button and Offers */}
         {selectedBank && selectedBankData && (
-          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center gap-3 mb-3">
-              {selectedBankData.logoIcon}
-              <div>
-                <div className={`font-medium ${isMobile ? 'text-sm' : 'text-base'}`}>
-                  {selectedBankData.name}
+          <div className="space-y-4">
+            {/* Bank Offers Section */}
+            {(selectedBankData.offers || selectedBankData.cashback) && (
+              <div className={`p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg ${isMobile ? 'p-4' : 'p-3'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Gift className={`text-green-600 ${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                  <span className={`font-medium text-green-800 ${isMobile ? 'text-sm' : 'text-sm'}`}>Special Offers</span>
                 </div>
-                <div className="text-xs text-gray-600">
-                  You will be redirected to your bank's secure payment gateway
+                {selectedBankData.offers && (
+                  <div className="space-y-1">
+                    {selectedBankData.offers.map((offer, index) => (
+                      <div key={index} className={`flex items-center gap-2 text-green-700 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full flex-shrink-0"></div>
+                        <span>{offer}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {selectedBankData.cashback && (
+                  <div className={`flex items-center gap-2 text-green-700 font-medium mt-2 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                    <div className="w-1.5 h-1.5 bg-green-600 rounded-full flex-shrink-0"></div>
+                    <span>{selectedBankData.cashback}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Payment Button Section */}
+            <div className={`bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg ${isMobile ? 'p-4' : 'p-4'}`}>
+              <div className={`flex items-center gap-3 mb-3 ${isMobile ? 'mb-4' : 'mb-3'}`}>
+                <div className="flex-shrink-0">
+                  {selectedBankData.logoIcon}
+                </div>
+                <div className="flex-1">
+                  <div className={`font-medium ${isMobile ? 'text-base' : 'text-base'}`}>
+                    {selectedBankData.name}
+                  </div>
+                  <div className={`text-gray-600 flex items-center gap-1 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                    <Shield className="h-3 w-3 flex-shrink-0" />
+                    <span>You will be redirected to secure banking gateway</span>
+                  </div>
+                </div>
+              </div>
+              
+              <Button
+                onClick={handlePayment}
+                disabled={isProcessing}
+                className={`w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
+                  isMobile ? 'h-14 text-base py-4' : 'h-14 text-base'
+                }`}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader className={`animate-spin mr-2 ${isMobile ? 'h-5 w-5' : 'h-5 w-5'}`} />
+                    <span className={isMobile ? 'text-base' : 'text-base'}>Processing Payment...</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield className={`mr-2 ${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                    <span className={isMobile ? 'text-base font-semibold' : 'text-base'}>Pay {formatPrice(total)}</span>
+                  </>
+                )}
+              </Button>
+              
+              {/* Payment Security Info */}
+              <div className={`text-center ${isMobile ? 'mt-4' : 'mt-3'}`}>
+                <div className={`text-gray-600 flex items-center justify-center gap-1 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                  <Shield className="h-3 w-3 text-green-600 flex-shrink-0" />
+                  <span>256-bit SSL encrypted • Bank-level security</span>
                 </div>
               </div>
             </div>
-            
-            <Button
-              onClick={handlePayment}
-              disabled={isProcessing}
-              className={`w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold ${
-                isMobile ? 'h-10 text-sm' : 'h-12 text-base'
-              }`}
-            >
-              {isProcessing ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
-                  Redirecting...
-                </>
-              ) : (
-                `Pay ${formatPrice(total)}`
-              )}
-            </Button>
           </div>
         )}
 
-        {/* Information */}
-        <div className={`bg-gray-50 p-3 rounded-lg border ${isMobile ? '' : 'mt-4'}`}>
-          <div className={`text-gray-600 font-medium ${isMobile ? 'text-xs' : 'text-sm'} mb-2`}>
-            Important Information:
+        {/* Enhanced Information Section */}
+        <div className={`bg-gray-50 border rounded-lg ${isMobile ? 'p-4 mt-4' : 'p-4 mt-6'}`}>
+          <div className={`flex items-center gap-2 ${isMobile ? 'mb-4' : 'mb-3'}`}>
+            <Info className={`text-blue-600 ${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+            <div className={`text-gray-800 font-medium ${isMobile ? 'text-base' : 'text-base'}`}>
+              Payment Information
+            </div>
           </div>
-          <div className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'} space-y-1`}>
-            <p>• You will be redirected to your bank's secure website</p>
-            <p>• Please have your Net Banking credentials ready</p>
-            <p>• Payment confirmation will be sent via SMS and email</p>
-            <p>• Transaction is protected by bank-level security</p>
+          <div className={`text-gray-600 space-y-3 ${isMobile ? 'text-sm' : 'text-sm'}`}>
+            <div className="grid gap-3">
+              <p className="flex items-start gap-3">
+                <Shield className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <span>Bank-grade security with 256-bit SSL encryption</span>
+              </p>
+              <p className="flex items-start gap-3">
+                <div className="w-4 h-4 bg-blue-600 rounded-full flex-shrink-0 mt-0.5"></div>
+                <span>Instant payment confirmation via SMS and email</span>
+              </p>
+              <p className="flex items-start gap-3">
+                <div className="w-4 h-4 bg-green-600 rounded-full flex-shrink-0 mt-0.5"></div>
+                <span>No additional charges from our platform</span>
+              </p>
+              <p className="flex items-start gap-3">
+                <div className="w-4 h-4 bg-purple-600 rounded-full flex-shrink-0 mt-0.5"></div>
+                <span>24/7 customer support for payment issues</span>
+              </p>
+            </div>
+            
+            {selectedBank && (
+              <div className={`pt-3 border-t border-gray-200 ${isMobile ? 'mt-4' : 'mt-3'}`}>
+                <p className={`font-medium text-gray-700 mb-1 ${isMobile ? 'text-sm' : 'text-sm'}`}>Your selected bank will be saved for faster checkout next time</p>
+                <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>You can change this preference anytime</p>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

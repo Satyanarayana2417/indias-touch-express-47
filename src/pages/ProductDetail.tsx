@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Truck, Shield, RotateCcw } from 'lucide-react';
+import { Truck, Shield, RotateCcw, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { useCart } from '@/context/CartContext';
 import { Product, ProductVariant, getProductById, getProductsByCategory } from '@/lib/products';
@@ -190,14 +191,18 @@ const ProductDetail: React.FC = () => {
     
     const finalPrice = selectedVariant ? selectedVariant.price : parseFloat(product.price);
     const productName = selectedVariant ? `${product.name} (${selectedVariant.name})` : product.name;
+    const variantName = selectedVariant ? selectedVariant.name : undefined;
     
-    addItem(
-      product.id || '1',
-      productName,
-      finalPrice,
-      product.image,
-      quantity
-    );
+    // Add items based on quantity - addItem adds one item at a time
+    for (let i = 0; i < quantity; i++) {
+      addItem(
+        product.id || '1',
+        productName,
+        finalPrice,
+        product.image,
+        variantName
+      );
+    }
     
     toast({
       title: 'Added to cart',
@@ -285,6 +290,17 @@ const ProductDetail: React.FC = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        {/* Mobile Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 md:hidden"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+
         {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           <ProductImageGallery

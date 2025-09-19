@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Filter, Star, ShoppingCart, Heart, Sparkles, Palette, Grid, List } from "lucide-react";
+import { Search, Filter, Star, ShoppingCart, Heart, Sparkles, Palette, Grid, List, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -180,6 +180,19 @@ const DecorativeItems = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* Mobile Back Button */}
+      <div className="container mx-auto px-4 pt-4 md:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
       
       <main>
         {/* Hero Section */}

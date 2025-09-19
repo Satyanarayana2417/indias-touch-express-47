@@ -10,13 +10,15 @@ interface PaymentMethodsPanelProps {
   onPaymentSelect: (method: string) => void;
   isMobile: boolean;
   onPaymentComplete?: (paymentData: any) => void;
+  total?: number;
 }
 
 const PaymentMethodsPanel: React.FC<PaymentMethodsPanelProps> = ({
   selectedPayment,
   onPaymentSelect,
   isMobile,
-  onPaymentComplete
+  onPaymentComplete,
+  total = 0
 }) => {
   const paymentMethods = [
     {
@@ -65,6 +67,7 @@ const PaymentMethodsPanel: React.FC<PaymentMethodsPanelProps> = ({
           selectedPayment={selectedPayment}
           onPaymentSelect={onPaymentSelect}
           onPaymentComplete={onPaymentComplete}
+          total={total}
         />
       </div>
     );

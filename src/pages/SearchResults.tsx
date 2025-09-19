@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, Grid, List, Package } from 'lucide-react';
+import { Search, Filter, Grid, List, Package, ArrowLeft } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -218,6 +218,17 @@ const SearchResults = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Mobile Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 md:hidden"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+
         {/* Search Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Search Results</h1>

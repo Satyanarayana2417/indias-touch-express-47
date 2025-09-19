@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Package, Truck, Shield, Clock, Calculator, MapPin, Phone } from "lucide-react";
+import { Package, Truck, Shield, Clock, Calculator, MapPin, Phone, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 const CourierServices = () => {
+  const navigate = useNavigate();
   const [serviceType, setServiceType] = useState("you-give-we-ship");
 
   const services = [
@@ -38,6 +40,19 @@ const CourierServices = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* Mobile Back Button */}
+      <div className="container mx-auto px-4 pt-4 md:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
       
       <main>
         {/* Hero Section */}

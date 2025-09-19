@@ -43,6 +43,8 @@ import AccountProfile from "./pages/AccountProfile";
 import AccountAddresses from "./pages/AccountAddresses";
 import Help from "./pages/Help";
 import ProhibitedItems from "./pages/ProhibitedItems";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentTestPage from "./pages/PaymentTestPage";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,7 @@ const App = () => (
                     <Route path="/decorative-items" element={<DecorativeItems />} />
                     <Route path="/about-us" element={<AboutUs />} />
                     <Route path="/prohibited-items" element={<ProhibitedItems />} />
+                    <Route path="/payment-test" element={<PaymentTestPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     
@@ -82,6 +85,11 @@ const App = () => (
                     <Route path="/checkout" element={
                       <UserProtectedRoute>
                         <Checkout />
+                      </UserProtectedRoute>
+                    } />
+                    <Route path="/payment-success" element={
+                      <UserProtectedRoute>
+                        <PaymentSuccessPage />
                       </UserProtectedRoute>
                     } />
                     <Route path="/search" element={<SearchResults />} />
