@@ -144,7 +144,7 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
       <Card className="shadow-sm">
         <CardHeader className={isMobile ? 'pb-3' : ''}>
           <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
-            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-white0 rounded-full"></div>
             Add new UPI ID
             <a 
               href="#" 
@@ -205,7 +205,7 @@ const UPIPaymentPanel: React.FC<UPIPaymentPanelProps> = ({
               {[
                 { name: 'Google Pay', color: 'bg-gray-600' },
                 { name: 'PhonePe', color: 'bg-purple-600' },
-                { name: 'Paytm', color: 'bg-gray-500' }
+                { name: 'Paytm', color: 'bg-white0' }
               ].map((app) => (
                 <Button
                   key={app.name}

@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { 
@@ -22,7 +22,7 @@ export interface CartItem {
   image: string;              // image url
   variant?: string;           // optional variant identifier/name
   originalPrice?: number;     // for showing discount vs current price
-  displayPrice?: string;      // cached formatted or original string (₹299 etc.)
+  displayPrice?: string;      // cached formatted or original string (?299 etc.)
 }
 
 interface CartContextType {

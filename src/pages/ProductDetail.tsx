@@ -5,7 +5,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { useCart } from '@/context/CartContext';
-import { Product, ProductVariant, getProductById, getProductsByCategory } from '@/lib/products';
+import { Product, ProductVariant, getProductById, getProductsByCategory, subscribeToProduct } from '@/lib/products';
+import RealtimeImageSync from '@/lib/realtimeImageSync';
 import Layout from '@/components/Layout';
 import ProductImageGallery from '@/components/product/ProductImageGallery';
 import ProductInfo from '@/components/product/ProductInfo';
@@ -36,233 +37,255 @@ const ProductDetail: React.FC = () => {
 
   // Load product data
   useEffect(() => {
-    const loadProduct = async () => {
-      if (!id) {
-        setError('Product ID not found');
-        setLoading(false);
-        return;
-      }
+    if (!id) {
+      setError('Product ID not found');
+      setLoading(false);
+      return;
+    }
 
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Try to get product from Firebase first
-        let productData = await getProductById(id);
-        
-        // Fallback to mock data if Firebase doesn't have the product
-        if (!productData) {
-          productData = getMockProductById(id);
-        }
-
-        if (!productData) {
-          setError('Product not found');
-          setLoading(false);
-          return;
-        }
-
+    // Subscribe to real-time product updates using enhanced sync
+    const unsubscribe = RealtimeImageSync.listenForProductById(id, (productData) => {
+      if (productData) {
+        console.log('📦 Product detail updated in real-time', id);
         setProduct(productData);
-
+        setError(null);
+        
         // Set default variant if available
         if (productData.variants && productData.variants.length > 0) {
           const defaultVariant = productData.variants.find(v => v.isDefault) || productData.variants[0];
           setSelectedVariant(defaultVariant);
         }
-
-        // Load recommended products
-        try {
-          const recommended = await getProductsByCategory(productData.category, 8);
-          // Filter out current product and limit to 6
-          const filtered = recommended.filter(p => p.id !== id).slice(0, 6);
-          
-          // If we don't have enough from Firebase, supplement with mock data
-          if (filtered.length < 6) {
-            const mockRecommended = getMockRecommendedProducts(productData.category, id);
-            const combined = [...filtered, ...mockRecommended].slice(0, 6);
-            setRecommendedProducts(combined);
-          } else {
-            setRecommendedProducts(filtered);
-          }
-        } catch (error) {
-          console.error('Error loading recommended products:', error);
-          // Fallback to mock recommended products
-          const mockRecommended = getMockRecommendedProducts(productData.category, id);
-          setRecommendedProducts(mockRecommended);
-        }
-
-      } catch (error) {
-        console.error('Error loading product:', error);
-        setError('Failed to load product');
-      } finally {
+        
         setLoading(false);
+      } else {
+        setError('Product not found');
+        setLoading(false);
+      }
+    });
+
+    // Listen for force refresh events
+    const handleForceRefresh = () => {
+      console.log('🔄 Force refreshing product detail', id);
+      // The real-time listener will handle the refresh automatically
+    };
+
+    const handleImageUploaded = (event: any) => {
+      const productId = event.detail?.productId;
+      if (productId === id) {
+        console.log('📸 Image uploaded for this product, refreshing');
       }
     };
 
-    loadProduct();
+    window.addEventListener('forceProductRefresh', handleForceRefresh);
+    window.addEventListener('imageUploaded', handleImageUploaded);
+    window.addEventListener('productSaved', handleImageUploaded);
+
+    // Register listener for cleanup
+    RealtimeImageSync.registerListener(`productDetail-${id}`, unsubscribe);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('forceProductRefresh', handleForceRefresh);
+      window.removeEventListener('imageUploaded', handleImageUploaded);
+      window.removeEventListener('productSaved', handleImageUploaded);
+    };
   }, [id]);
 
-  // Mock data function for fallback
-  const getMockProductById = (productId: string): Product | null => {
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        name: 'Premium Basmati Rice',
-        name_lowercase: 'premium basmati rice',
-        price: '899',
-        originalPrice: '999',
-        image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500',
-        images: [
-          'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500',
-          'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=500',
-          'https://images.unsplash.com/photo-1553830591-2f39e38a8dd6?w=500'
-        ],
-        description: 'Authentic Indian Basmati rice, aged for perfect aroma and taste.',
-        detailedDescription: 'Our premium Basmati rice is carefully selected from the foothills of the Himalayas, aged for over 12 months to develop its distinctive aroma and elongated grains. Perfect for biryanis, pulaos, and everyday meals.',
-        category: 'Rice & Grains',
-        rating: 4.5,
-        reviews: 128,
-        badge: 'Best Seller',
-        inStock: true,
-        variants: [
-          { name: '1kg', price: 899, originalPrice: 999, stock: 10, isDefault: true },
-          { name: '5kg', price: 4299, originalPrice: 4799, stock: 5 },
-          { name: '10kg', price: 8399, originalPrice: 9299, stock: 3 }
-        ],
-        nutritionalInfo: 'Energy: 345 kcal\nProtein: 7.1g\nCarbohydrates: 78g\nFat: 0.7g\nFiber: 1.3g',
-        ingredients: '100% Pure Basmati Rice',
-        origin: 'Punjab, India',
-        weight: '1kg',
-        dimensions: '25cm x 15cm x 8cm'
-      },
-      // Add more mock products as needed
-    ];
-    
-    return mockProducts.find(p => p.id === productId) || null;
-  };
+  // Load recommended products when product changes
+  useEffect(() => {
+    const loadRecommendedProducts = async () => {
+      if (!product) return;
 
-  const getMockRecommendedProducts = (category: string, currentId: string): Product[] => {
-    const mockProducts: Product[] = [
-      {
-        id: 'rec1',
-        name: 'Organic Turmeric Powder',
-        name_lowercase: 'organic turmeric powder',
-        price: '299',
-        originalPrice: '349',
-        image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=300',
-        description: 'Pure organic turmeric powder from Kerala farms.',
-        category: 'Spices',
-        rating: 4.7,
-        reviews: 85,
-        inStock: true
-      },
-      {
-        id: 'rec2',
-        name: 'Alphonso Mango Pulp',
-        name_lowercase: 'alphonso mango pulp',
-        price: '199',
-        image: 'https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=300',
-        description: 'Premium Alphonso mango pulp, naturally sweet.',
-        category: 'Fruits & Preserves',
-        rating: 4.6,
-        reviews: 64,
-        inStock: true
-      },
-      {
-        id: 'rec3',
-        name: 'Traditional Brass Diya Set',
-        name_lowercase: 'traditional brass diya set',
-        price: '799',
-        originalPrice: '899',
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300',
-        description: 'Handcrafted brass diyas for festivals and ceremonies.',
-        category: 'Decorative Items',
-        rating: 4.4,
-        reviews: 42,
-        inStock: true
+      try {
+        const recommended = await getProductsByCategory(product.category, 8);
+        // Filter out current product and limit to 6
+        const filtered = recommended.filter(p => p.id !== id).slice(0, 6);
+        setRecommendedProducts(filtered);
+      } catch (error) {
+        console.error('Error loading recommended products:', error);
+        setRecommendedProducts([]);
       }
-    ];
-    
-    return mockProducts.filter(p => p.id !== currentId).slice(0, 6);
-  };
+    };
 
-  // Event handlers
+    loadRecommendedProducts();
+  }, [product, id]);
+
+  // Add to cart handler
   const handleAddToCart = () => {
-    if (!product) return;
-    
-    const finalPrice = selectedVariant ? selectedVariant.price : parseFloat(product.price);
-    const productName = selectedVariant ? `${product.name} (${selectedVariant.name})` : product.name;
-    const variantName = selectedVariant ? selectedVariant.name : undefined;
-    
-    // Add items based on quantity - addItem adds one item at a time
-    for (let i = 0; i < quantity; i++) {
-      addItem(
-        product.id || '1',
-        productName,
-        finalPrice,
-        product.image,
-        variantName
-      );
+    if (!product) {
+      toast({
+        title: "Error",
+        description: "Product not found",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Handle products with variants
+    if (product.variants && product.variants.length > 0) {
+      if (!selectedVariant) {
+        toast({
+          title: "Please Select Variant",
+          description: "Please select a size/weight option before adding to cart",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedVariant.stock === 0) {
+        toast({
+          title: "Out of Stock",
+          description: `${selectedVariant.name} is currently out of stock`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedVariant.stock < quantity) {
+        toast({
+          title: "Insufficient Stock",
+          description: `Only ${selectedVariant.stock} units available for ${selectedVariant.name}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Add with variant info
+      for (let i = 0; i < quantity; i++) {
+        addItem(
+          product.id!, 
+          product.name, 
+          selectedVariant.price, 
+          product.image, 
+          selectedVariant.name, 
+          selectedVariant.originalPrice
+        );
+      }
+
+      toast({
+        title: "Added to Cart",
+        description: `${quantity} x ${product.name} (${selectedVariant.name}) added to cart`,
+      });
+    } else {
+      // Handle products without variants
+      if (!product.inStock) {
+        toast({
+          title: "Out of Stock",
+          description: "This item is currently out of stock",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Add without variant info
+      for (let i = 0; i < quantity; i++) {
+        addItem(
+          product.id!, 
+          product.name, 
+          parseInt(product.price), 
+          product.image
+        );
+      }
+
+      toast({
+        title: "Added to Cart",
+        description: `${quantity} x ${product.name} added to cart`,
+      });
+    }
+  };
+
+  // Buy now handler
+  const handleBuyNow = () => {
+    if (!product) {
+      toast({
+        title: "Error",
+        description: "Product not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Handle products with variants
+    if (product.variants && product.variants.length > 0) {
+      if (!selectedVariant) {
+        toast({
+          title: "Please Select Variant",
+          description: "Please select a size/weight option before purchasing",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedVariant.stock === 0) {
+        toast({
+          title: "Out of Stock",
+          description: `${selectedVariant.name} is currently out of stock`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedVariant.stock < quantity) {
+        toast({
+          title: "Insufficient Stock",
+          description: `Only ${selectedVariant.stock} units available for ${selectedVariant.name}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Handle products without variants
+      if (!product.inStock) {
+        toast({
+          title: "Out of Stock",
+          description: "This item is currently out of stock",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Add to cart first
+    handleAddToCart();
     
-    toast({
-      title: 'Added to cart',
-      description: `${quantity}x ${productName} has been added to your cart.`,
-    });
+    // Navigate to checkout after a brief delay
+    setTimeout(() => {
+      navigate('/checkout');
+    }, 500);
   };
 
-  const handleRecommendedPrevious = () => {
-    setRecommendedStartIndex(Math.max(0, recommendedStartIndex - 3));
-  };
-
-  const handleRecommendedNext = () => {
-    setRecommendedStartIndex(Math.min(recommendedProducts.length - 3, recommendedStartIndex + 3));
-  };
-
-  const handleRecommendedProductClick = (productId: string) => {
+  // Navigate to related products
+  const handleRelatedProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
   };
 
-  const handleRecommendedAddToCart = (recommendedProduct: Product) => {
-    addItem(
-      recommendedProduct.id || '1',
-      recommendedProduct.name,
-      parseFloat(recommendedProduct.price),
-      recommendedProduct.image
-    );
-    
+  // Wishlist toggle
+  const handleWishlistToggle = () => {
+    setIsWishlisted(!isWishlisted);
     toast({
-      title: 'Added to cart',
-      description: `${recommendedProduct.name} has been added to your cart.`,
+      title: isWishlisted ? "Removed from Wishlist" : "Added to Wishlist",
+      description: isWishlisted ? 
+        `${product?.name} removed from your wishlist` : 
+        `${product?.name} added to your wishlist`,
     });
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product?.name,
-        text: product?.description,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: 'Link copied',
-        description: 'Product link copied to clipboard.',
-      });
-    }
-  };
-
+  // Loading state
   if (loading) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="aspect-square bg-gray-200 rounded-lg"></div>
-              <div className="space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-12 bg-gray-200 rounded w-1/3"></div>
+        <div className="min-h-screen bg-white">
+          <div className="container mx-auto px-4 py-8">
+            <div className="animate-pulse">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-gray-200 aspect-square rounded-lg"></div>
+                <div className="space-y-4">
+                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-10 bg-gray-200 rounded w-1/3"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -271,95 +294,139 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  if (error || !product) {
+  // Error state
+  if (error) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-8">
-          <Alert variant="destructive">
-            <AlertDescription>
-              {error || 'Product not found'}
-            </AlertDescription>
-          </Alert>
+        <div className="min-h-screen bg-white">
+          <div className="container mx-auto px-4 py-8">
+            <Alert variant="destructive">
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+            <div className="mt-4">
+              <Button onClick={() => navigate(-1)} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Go Back
+              </Button>
+            </div>
+          </div>
         </div>
       </Layout>
     );
   }
 
-  const productImages = product.images || [product.image];
+  // No product found
+  if (!product) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-white">
+          <div className="container mx-auto px-4 py-8">
+            <Alert>
+              <AlertDescription>
+                Product not found. The product you're looking for doesn't exist or has been removed.
+              </AlertDescription>
+            </Alert>
+            <div className="mt-4">
+              <Button onClick={() => navigate(-1)} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Get current variant price and stock
+  const currentVariant = selectedVariant || product.variants?.[0];
+  const currentPrice = currentVariant?.price || parseInt(product.price);
+  const currentOriginalPrice = currentVariant?.originalPrice || (product.originalPrice ? parseInt(product.originalPrice) : null);
+  const currentStock = currentVariant?.stock || (product.inStock ? 10 : 0);
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Mobile Back Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 mb-4 md:hidden"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto px-4 py-8">
+          {/* Back button */}
+          <div className="mb-6">
+            <Button onClick={() => navigate(-1)} variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </div>
 
-        {/* Product Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <ProductImageGallery
-            images={productImages}
-            productName={product.name}
-            selectedImageIndex={selectedImageIndex}
-            onImageChange={setSelectedImageIndex}
-          />
-          
-          <ProductInfo
-            product={product}
-            selectedVariant={selectedVariant}
-            quantity={quantity}
-            isWishlisted={isWishlisted}
-            onVariantChange={setSelectedVariant}
-            onQuantityChange={setQuantity}
-            onAddToCart={handleAddToCart}
-            onToggleWishlist={() => setIsWishlisted(!isWishlisted)}
-            onShare={handleShare}
-          />
+          {/* Product details grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8 lg:mb-12">
+            {/* Product Images */}
+            <div className="order-1 lg:order-1">
+              <ProductImageGallery
+                images={product.images || [product.image]}
+                productName={product.name}
+                selectedImageIndex={selectedImageIndex}
+                onImageChange={setSelectedImageIndex}
+              />
+            </div>
+
+            {/* Product Information */}
+            <div className="order-2 lg:order-2 lg:sticky lg:top-4 lg:self-start">
+              <ProductInfo
+                product={product}
+                selectedVariant={selectedVariant}
+                quantity={quantity}
+                isWishlisted={isWishlisted}
+                onVariantChange={setSelectedVariant}
+                onQuantityChange={setQuantity}
+                onToggleWishlist={handleWishlistToggle}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+                onShare={() => {}}
+              />
+            </div>
+          </div>
+
+          {/* Product tabs (Description, Reviews, etc.) */}
+          <ProductTabs product={product} />
+
+          {/* Shipping & Returns info */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 lg:mb-12">
+            <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+              <Truck className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-green-800 text-sm sm:text-base">Free Shipping</h3>
+                <p className="text-xs sm:text-sm text-green-600">On orders above ₹500</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-blue-800 text-sm sm:text-base">Secure Payment</h3>
+                <p className="text-xs sm:text-sm text-blue-600">100% secure transactions</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors sm:col-span-2 lg:col-span-1">
+              <RotateCcw className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-orange-800 text-sm sm:text-base">Easy Returns</h3>
+                <p className="text-xs sm:text-sm text-orange-600">7-day return policy</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommended Products */}
+          {recommendedProducts.length > 0 && (
+            <RecommendedProducts
+              products={recommendedProducts}
+              startIndex={recommendedStartIndex}
+              onProductClick={handleRelatedProductClick}
+              onPrevious={() => setRecommendedStartIndex(Math.max(0, recommendedStartIndex - 3))}
+              onNext={() => setRecommendedStartIndex(Math.min(recommendedProducts.length - 3, recommendedStartIndex + 3))}
+              onAddToCart={(product) => {}}
+            />
+          )}
         </div>
-
-        {/* Shipping Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 p-6 bg-gray-50 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <Truck className="h-6 w-6 text-primary" />
-            <div>
-              <h4 className="font-medium">Free Shipping</h4>
-              <p className="text-sm text-gray-600">On orders over ₹1,000</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Shield className="h-6 w-6 text-primary" />
-            <div>
-              <h4 className="font-medium">Secure Payment</h4>
-              <p className="text-sm text-gray-600">100% secure transactions</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <RotateCcw className="h-6 w-6 text-primary" />
-            <div>
-              <h4 className="font-medium">Easy Returns</h4>
-              <p className="text-sm text-gray-600">7-day return policy</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Tabs */}
-        <ProductTabs product={product} />
-
-        {/* Recommended Products */}
-        <RecommendedProducts
-          products={recommendedProducts}
-          startIndex={recommendedStartIndex}
-          onPrevious={handleRecommendedPrevious}
-          onNext={handleRecommendedNext}
-          onProductClick={handleRecommendedProductClick}
-          onAddToCart={handleRecommendedAddToCart}
-        />
       </div>
     </Layout>
   );

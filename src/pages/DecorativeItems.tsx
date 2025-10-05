@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, Star, ShoppingCart, Heart, Sparkles, Palette, Grid, List, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -13,6 +13,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
 import { toast } from "@/hooks/use-toast";
+import { getProductsByCategory, subscribeToProducts, Product as FirebaseProduct } from "@/lib/products";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const DecorativeItems = () => {
@@ -20,13 +21,51 @@ const DecorativeItems = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [products, setProducts] = useState<FirebaseProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleAddToCart = (product: any) => {
-    addItem(String(product.id), product.name, product.price, product.image);
+  // Load decorative products from Firebase
+  useEffect(() => {
+    const loadDecorativeProducts = async () => {
+      try {
+        setLoading(true);
+        // Get products from 'decorative' category in Firebase
+        const decorativeProducts = await getProductsByCategory('decorative', 50);
+        setProducts(decorativeProducts);
+      } catch (error) {
+        console.error('Error loading decorative products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load decorative products. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDecorativeProducts();
+
+    // Subscribe to real-time updates for decorative products
+    const unsubscribe = subscribeToProducts((allProducts) => {
+      // Filter for decorative category products
+      const decorativeProducts = allProducts.filter(product => 
+        product.category.toLowerCase() === 'decorative'
+      );
+      setProducts(decorativeProducts);
+    });
+
+    return () => unsubscribe && unsubscribe();
+  }, []);
+
+  const handleAddToCart = (product: FirebaseProduct) => {
+    addItem(product.id || '', product.name, product.price, product.image);
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
@@ -35,7 +74,7 @@ const DecorativeItems = () => {
     navigate('/cart');
   };
 
-  const handleWishlistToggle = async (e: React.MouseEvent, productId: number) => {
+  const handleWishlistToggle = async (e: React.MouseEvent, product: FirebaseProduct) => {
     e.stopPropagation();
     
     if (!currentUser) {
@@ -43,18 +82,20 @@ const DecorativeItems = () => {
       return;
     }
 
-    if (isInWishlist(productId.toString())) {
-      await removeFromWishlist(productId.toString());
+    const productId = product.id || '';
+    
+    if (isInWishlist(productId)) {
+      await removeFromWishlist(productId);
     } else {
       await addToWishlist({
-        id: productId.toString(),
-        name: decorativeProducts.find(p => p.id === productId)?.name || '',
-        price: decorativeProducts.find(p => p.id === productId)?.price || '',
-        image: decorativeProducts.find(p => p.id === productId)?.image || '',
-        originalPrice: decorativeProducts.find(p => p.id === productId)?.originalPrice,
-        inStock: decorativeProducts.find(p => p.id === productId)?.inStock || false,
-        rating: decorativeProducts.find(p => p.id === productId)?.rating || 0,
-        reviews: decorativeProducts.find(p => p.id === productId)?.reviews || 0
+        id: productId,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        originalPrice: product.originalPrice,
+        inStock: product.inStock,
+        rating: product.rating || 0,
+        reviews: product.reviews || 0
       });
     }
   };
@@ -67,115 +108,28 @@ const DecorativeItems = () => {
     });
   };
 
-  const handleProductClick = (productId: number) => {
-    navigate(`/product/${productId}`);
+  const handleProductClick = (product: FirebaseProduct) => {
+    navigate(`/product/${product.id}`);
   };
 
+  // Dynamic categories based on loaded products
   const categories = [
-    { id: "all", name: "All Decorative Items", count: 67 },
-    { id: "brass", name: "Brass Items", count: 24 },
-    { id: "textiles", name: "Textiles & Fabrics", count: 18 },
-    { id: "pottery", name: "Pottery & Ceramics", count: 12 },
-    { id: "woodcraft", name: "Wooden Crafts", count: 8 },
-    { id: "jewelry", name: "Traditional Jewelry", count: 5 }
+    { id: "all", name: "All Decorative Items", count: products.length },
+    { id: "brass", name: "Brass Items", count: products.filter(p => p.category === 'brass').length },
+    { id: "textiles", name: "Textiles & Fabrics", count: products.filter(p => p.category === 'textiles').length },
+    { id: "pottery", name: "Pottery & Ceramics", count: products.filter(p => p.category === 'pottery').length },
+    { id: "woodcraft", name: "Wooden Crafts", count: products.filter(p => p.category === 'woodcraft').length },
+    { id: "jewelry", name: "Traditional Jewelry", count: products.filter(p => p.category === 'jewelry').length }
   ];
 
-  const decorativeProducts = [
-    {
-      id: 301,
-      name: "Handcrafted Brass Diya Set (12 pieces)",
-      price: "₹2,939",
-      originalPrice: "₹3,619",
-      rating: 4.8,
-      reviews: 167,
-      image: featuredImage,
-      badges: ["Handcrafted", "Festival Special"],
-      description: "Beautiful set of 12 traditional brass oil lamps, perfect for Diwali, weddings, and spiritual ceremonies.",
-      category: "brass",
-      features: ["Pure brass", "Handcrafted", "Traditional design", "Set of 12"],
-      artisan: "Craftsmen of Moradabad",
-      inStock: true
-    },
-    {
-      id: 302,
-      name: "Kashmiri Pashmina Shawl",
-      price: "₹7,579",
-      originalPrice: "₹10,199",
-      rating: 4.9,
-      reviews: 89,
-      image: featuredImage,
-      badges: ["Authentic", "Luxury"],
-      description: "Authentic Kashmiri pashmina shawl with intricate embroidery. Made from finest cashmere wool by master craftsmen.",
-      category: "textiles",
-      features: ["100% cashmere", "Hand embroidered", "Authentic Kashmiri", "Luxury quality"],
-      artisan: "Kashmiri Weavers",
-      inStock: true
-    },
-    {
-      id: 303,
-      name: "Blue Pottery Vase with Floral Design",
-      price: "₹3,869",
-      originalPrice: "₹4,719",
-      rating: 4.7,
-      reviews: 134,
-      image: featuredImage,
-      badges: ["Jaipur Craft", "Unique"],
-      description: "Exquisite blue pottery vase featuring traditional Jaipur craftsmanship with beautiful floral motifs.",
-      category: "pottery",
-      features: ["Blue pottery", "Handpainted", "Jaipur craft", "Floral design"],
-      artisan: "Jaipur Potters Guild",
-      inStock: true
-    },
-    {
-      id: 304,
-      name: "Carved Wooden Elephant Pair",
-      price: "₹5,729",
-      originalPrice: "₹6,749",
-      rating: 4.6,
-      reviews: 92,
-      image: featuredImage,
-      badges: ["Hand Carved", "Rosewood"],
-      description: "Intricately carved wooden elephant pair made from premium rosewood. Symbol of good luck and prosperity.",
-      category: "woodcraft",
-      features: ["Rosewood material", "Hand carved", "Traditional design", "Set of 2"],
-      artisan: "Karnataka Wood Carvers",
-      inStock: false
-    },
-    {
-      id: 305,
-      name: "Kundan Traditional Necklace Set",
-      price: "₹10,529",
-      originalPrice: "₹12,659",
-      rating: 4.8,
-      reviews: 76,
-      image: featuredImage,
-      badges: ["Traditional", "Bridal"],
-      description: "Stunning Kundan necklace set with matching earrings. Perfect for weddings and special occasions.",
-      category: "jewelry",
-      features: ["Kundan stones", "Gold plated", "Matching earrings", "Bridal quality"],
-      artisan: "Rajasthani Jewelers",
-      inStock: true
-    },
-    {
-      id: 306,
-      name: "Mandala Wall Hanging Tapestry",
-      price: "₹2,439",
-      originalPrice: "₹3,039",
-      rating: 4.5,
-      reviews: 203,
-      image: featuredImage,
-      badges: ["Bohemian", "Cotton"],
-      description: "Beautiful mandala design wall tapestry made from premium cotton. Perfect for home decor and meditation spaces.",
-      category: "textiles",
-      features: ["100% cotton", "Mandala design", "Bohemian style", "Wall hanging"],
-      artisan: "Rajasthani Textile Artists",
-      inStock: true
-    }
-  ];
-
-  const filteredProducts = selectedCategory === "all" 
-    ? decorativeProducts 
-    : decorativeProducts.filter(product => product.category === selectedCategory);
+  // Filter products based on selected category and search term
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    const matchesSearch = searchTerm === "" || 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -297,8 +251,20 @@ const DecorativeItems = () => {
 
               {/* Main Content */}
               <div className="flex-1">
-                {/* Mobile Filters */}
-                <div className="lg:hidden mb-6">
+                {/* Mobile Filters and Search */}
+                <div className="lg:hidden mb-6 space-y-4">
+                  {/* Search Input */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-soft-gray" />
+                    <Input
+                      placeholder="Search decorative items..."
+                      className="pl-10 w-full"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  {/* Filter Button */}
                   <div className="flex gap-4 items-center">
                     <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                       <SheetTrigger asChild>
@@ -392,7 +358,38 @@ const DecorativeItems = () => {
                       </SheetContent>
                     </Sheet>
                   </div>
+                </div>
 
+                {/* Desktop Search and Toolbar */}
+                <div className="hidden lg:flex gap-4 mb-8 items-center justify-between">
+                  <div className="relative w-80">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-soft-gray" />
+                    <Input
+                      placeholder="Search decorative items..."
+                      className="pl-10 w-full"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                    <Select defaultValue="featured">
+                      <SelectTrigger className="w-36 sm:w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="featured">Featured</SelectItem>
+                        <SelectItem value="price-low">Price: Low to High</SelectItem>
+                        <SelectItem value="price-high">Price: High to Low</SelectItem>
+                        <SelectItem value="rating">Highest Rated</SelectItem>
+                        <SelectItem value="newest">Newest Arrivals</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Mobile Sort (showing on mobile only) */}
+                <div className="lg:hidden mb-6">
                   <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
                     <Select defaultValue="featured">
                       <SelectTrigger className="w-36 sm:w-48">
@@ -433,146 +430,159 @@ const DecorativeItems = () => {
                 </div>
 
                 {/* Products Grid/List */}
-                <div className={viewMode === 'grid' 
-                  ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6'
-                  : 'space-y-4'
-                }>
-                  {filteredProducts.map((product) => (
-                    <div 
-                      key={product.id} 
-                      className={`group cursor-pointer ${
-                        viewMode === 'list' ? 'flex flex-row bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4' : ''
-                      }`}
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      {viewMode === 'grid' ? (
-                        // Grid View
-                        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                          <div className="relative overflow-hidden bg-gray-50">
-                            <button 
-                              className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
-                              onClick={(e) => handleWishlistToggle(e, product.id)}
-                            >
-                              <Heart 
-                                className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
-                                  isInWishlist(product.id.toString()) 
-                                    ? 'text-red-500 fill-red-500' 
-                                    : 'text-gray-600 hover:text-red-500'
-                                }`} 
-                              />
-                            </button>
-                            {/* Badges */}
-                            {product.badges && product.badges.length > 0 && (
-                              <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold z-10">
-                                {product.badges[0]}
-                              </div>
-                            )}
-                            {/* Stock Status */}
-                            {!product.inStock && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                                <span className="text-white font-semibold text-sm">Out of Stock</span>
-                              </div>
-                            )}
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-32 sm:h-40 md:h-44 object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          <div className="p-2 sm:p-3">
-                            <div className="mb-2">
-                              <span className="text-sm sm:text-lg font-bold text-gray-900">
-                                {product.price}
-                              </span>
-                              {product.originalPrice && (
-                                <span className="text-xs sm:text-sm text-gray-500 line-through ml-1 sm:ml-2">
-                                  {product.originalPrice}
-                                </span>
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                  </div>
+                ) : filteredProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">No decorative products found.</p>
+                    {searchTerm && (
+                      <p className="text-gray-400 mt-2">Try adjusting your search term or filters.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className={viewMode === 'grid' 
+                    ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6'
+                    : 'space-y-4'
+                  }>
+                    {filteredProducts.map((product) => (
+                      <div 
+                        key={product.id} 
+                        className={`group cursor-pointer ${
+                          viewMode === 'list' ? 'flex flex-row bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 p-4' : ''
+                        }`}
+                        onClick={() => handleProductClick(product)}
+                      >
+                        {viewMode === 'grid' ? (
+                          // Grid View
+                          <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                            <div className="relative overflow-hidden bg-white">
+                              <button 
+                                className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
+                                onClick={(e) => handleWishlistToggle(e, product)}
+                              >
+                                <Heart 
+                                  className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+                                    isInWishlist(product.id || '') 
+                                      ? 'text-red-500 fill-red-500' 
+                                      : 'text-gray-600 hover:text-red-500'
+                                  }`} 
+                                />
+                              </button>
+                              {/* Badges */}
+                              {product.badge && (
+                                <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold z-10">
+                                  {product.badge}
+                                </div>
                               )}
-                            </div>
-                            <h3 className="text-xs sm:text-sm text-gray-700 line-clamp-2 mb-2 sm:mb-3 leading-tight">
-                              {product.name}
-                            </h3>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCart(product);
-                              }}
-                              className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
-                              variant="outline"
-                              disabled={!product.inStock}
-                            >
-                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              {product.inStock ? 'Add' : 'Out of Stock'}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        // List View
-                        <>
-                          <div className="relative w-32 h-32 flex-shrink-0 mr-4 bg-gray-50 rounded-lg overflow-hidden">
-                            <button 
-                              className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
-                              onClick={(e) => handleWishlistToggle(e, product.id)}
-                            >
-                              <Heart 
-                                className={`w-4 h-4 transition-colors ${
-                                  isInWishlist(product.id.toString()) 
-                                    ? 'text-red-500 fill-red-500' 
-                                    : 'text-gray-600 hover:text-red-500'
-                                }`} 
-                              />
-                            </button>
-                            {/* Badges */}
-                            {product.badges && product.badges.length > 0 && (
-                              <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-semibold z-10">
-                                {product.badges[0]}
-                              </div>
-                            )}
-                            {/* Stock Status */}
-                            {!product.inStock && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                                <span className="text-white font-semibold text-sm">Out of Stock</span>
-                              </div>
-                            )}
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <div className="mb-2">
-                              <span className="text-lg font-bold text-gray-900">
-                                {product.price}
-                              </span>
-                              {product.originalPrice && (
-                                <span className="text-sm text-gray-500 line-through ml-2">
-                                  {product.originalPrice}
-                                </span>
+                              {/* Stock Status */}
+                              {!product.inStock && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                  <span className="text-white font-semibold text-sm">Out of Stock</span>
+                                </div>
                               )}
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-32 sm:h-40 md:h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
                             </div>
-                            <h3 className="text-base text-gray-700 line-clamp-2 mb-4 leading-tight">
-                              {product.name}
-                            </h3>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCart(product);
-                              }}
-                              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-sm py-2 px-6 transition-all duration-200"
-                              variant="outline"
-                              disabled={!product.inStock}
-                            >
-                              <ShoppingCart className="h-4 w-4 mr-2" />
-                              {product.inStock ? 'Add to Cart' : 'Out of Stock'}
-                            </Button>
+                            <div className="p-2 sm:p-3">
+                              <div className="mb-2">
+                                <span className="text-sm sm:text-lg font-bold text-gray-900">
+                                  {product.price}
+                                </span>
+                                {product.originalPrice && (
+                                  <span className="text-xs sm:text-sm text-gray-500 line-through ml-1 sm:ml-2">
+                                    {product.originalPrice}
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="text-xs sm:text-sm text-gray-700 line-clamp-2 mb-2 sm:mb-3 leading-tight">
+                                {product.name}
+                              </h3>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
+                                className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
+                                variant="outline"
+                                disabled={!product.inStock}
+                              >
+                                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                {product.inStock ? 'Add' : 'Out of Stock'}
+                              </Button>
+                            </div>
                           </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                        ) : (
+                          // List View
+                          <>
+                            <div className="relative w-32 h-32 flex-shrink-0 mr-4 bg-white rounded-lg overflow-hidden">
+                              <button 
+                                className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
+                                onClick={(e) => handleWishlistToggle(e, product)}
+                              >
+                                <Heart 
+                                  className={`w-4 h-4 transition-colors ${
+                                    isInWishlist(product.id || '') 
+                                      ? 'text-red-500 fill-red-500' 
+                                      : 'text-gray-600 hover:text-red-500'
+                                  }`} 
+                                />
+                              </button>
+                              {/* Badges */}
+                              {product.badge && (
+                                <div className="absolute top-2 right-2 bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs font-semibold z-10">
+                                  {product.badge}
+                                </div>
+                              )}
+                              {/* Stock Status */}
+                              {!product.inStock && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                  <span className="text-white font-semibold text-sm">Out of Stock</span>
+                                </div>
+                              )}
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <div className="mb-2">
+                                <span className="text-lg font-bold text-gray-900">
+                                  {product.price}
+                                </span>
+                                {product.originalPrice && (
+                                  <span className="text-sm text-gray-500 line-through ml-2">
+                                    {product.originalPrice}
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="text-base text-gray-700 line-clamp-2 mb-4 leading-tight">
+                                {product.name}
+                              </h3>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
+                                className="bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-sm py-2 px-6 transition-all duration-200"
+                                variant="outline"
+                                disabled={!product.inStock}
+                              >
+                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Load More */}
                 <div className="text-center mt-12">

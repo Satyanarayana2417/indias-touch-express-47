@@ -44,10 +44,10 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
             <button
               key={product.id}
               onClick={() => handleProductClick(product)}
-              className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-50 transition-colors duration-150 text-left focus:outline-none focus:bg-gray-50"
+              className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-white transition-colors duration-150 text-left focus:outline-none focus:bg-white"
             >
               {/* Product Image */}
-              <div className="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+              <div className="flex-shrink-0 w-12 h-12 bg-white rounded-lg overflow-hidden">
                 {product.image ? (
                   <img
                     src={product.image}
@@ -109,3 +109,4 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
     </div>
   );
 };
+

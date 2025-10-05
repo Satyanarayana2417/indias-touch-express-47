@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
+import { searchProductsAdvanced, Product } from '@/lib/products';
 
 const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,8 +17,10 @@ const SearchResults = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const { addItem } = useCart();
 
-  // Mock search results - in production, this would come from your database
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const categoryFilter = searchParams.get('category') || '';
+
+  // Search results from Firebase
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Mock products for demonstration
@@ -144,20 +147,6 @@ const SearchResults = () => {
       description: "Authentic masala chai blend with cardamom and spices.",
       category: "beverages",
       inStock: true
-    },
-    // Products starting with 'T'
-    {
-      id: 10,
-      name: "Turmeric Powder Organic",
-      price: "₹1,099",
-      originalPrice: "₹1,349",
-      rating: 4.9,
-      reviews: 234,
-      image: "https://m.media-amazon.com/images/I/616TtvR-zQS._UF350,350_QL80_.jpg",
-      badge: "Organic",
-      description: "Pure organic turmeric powder sourced from Indian farms.",
-      category: "spices",
-      inStock: true
     }
   ];
 
@@ -170,11 +159,10 @@ const SearchResults = () => {
     }
   }, [searchParams]);
 
-  const performSearch = (query: string) => {
+  const performSearch = async (query: string) => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
       const normalizedQuery = query.toLowerCase().trim();
       
       // Only show results if there's a search term
@@ -184,14 +172,25 @@ const SearchResults = () => {
         return;
       }
       
-      // Filter by product name only (title only) and use startsWith for letter-based filtering
-      const filteredResults = allProducts.filter(product =>
-        product.name.toLowerCase().startsWith(normalizedQuery)
-      );
+      // Search Firebase products
+      const results = await searchProductsAdvanced({
+        query: normalizedQuery,
+        category: categoryFilter || undefined,
+        limit: 50
+      });
       
-      setSearchResults(filteredResults);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+      toast({
+        title: "Search Error",
+        description: "Failed to search products. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -209,12 +208,12 @@ const SearchResults = () => {
     });
   };
 
-  const handleProductClick = (productId: number) => {
+  const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <div className="container mx-auto px-4 py-8">

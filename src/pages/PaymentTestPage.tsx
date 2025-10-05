@@ -26,7 +26,7 @@ const PaymentTestPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6 text-center">Payment Success Test Page</h1>
         <div className="bg-white rounded-lg shadow-sm">

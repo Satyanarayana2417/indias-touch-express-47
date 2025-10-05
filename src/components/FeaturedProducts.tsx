@@ -1,14 +1,95 @@
 import { Star, Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
 import { toast } from "@/hooks/use-toast";
+import { getFeaturedProducts, Product as FirebaseProduct } from "@/lib/products";
+import RealtimeImageSync from "@/lib/realtimeImageSync";
 import featuredImage from "@/assets/featured-products.jpg";
 
 const FeaturedProducts = () => {
   const { addItem } = useCart();
   const navigate = useNavigate();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const convertFirebaseProducts = (firebaseProducts: FirebaseProduct[]) => {
+      return firebaseProducts.map(product => ({
+        id: parseInt(product.id || '0'),
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.image,
+        rating: product.rating || 0,
+        reviews: product.reviews || 0,
+        badge: product.badge,
+        description: product.description,
+        inStock: product.inStock
+      }));
+    };
+
+    const loadFeaturedProducts = async () => {
+      try {
+        setLoading(true);
+        
+        // Get featured products from Firebase
+        const firebaseProducts = await getFeaturedProducts(8);
+        
+        if (firebaseProducts.length > 0) {
+          setProducts(convertFirebaseProducts(firebaseProducts));
+        } else {
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error('Error loading featured products:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Initial load
+    loadFeaturedProducts();
+
+    // Set up real-time listener for featured products
+    const unsubscribe = RealtimeImageSync.listenForFeaturedProducts((firebaseProducts) => {
+      console.log('🌟 Featured products updated in real-time');
+      if (firebaseProducts.length > 0) {
+        setProducts(convertFirebaseProducts(firebaseProducts));
+      } else {
+        setProducts([]);
+      }
+      setLoading(false);
+    });
+
+    // Listen for force refresh events
+    const handleForceRefresh = () => {
+      console.log('🔄 Force refreshing featured products');
+      loadFeaturedProducts();
+    };
+
+    const handleImageUploaded = () => {
+      console.log('📸 Image uploaded, refreshing featured products');
+      setTimeout(loadFeaturedProducts, 1000); // Small delay to ensure Firebase sync
+    };
+
+    window.addEventListener('forceProductRefresh', handleForceRefresh);
+    window.addEventListener('imageUploaded', handleImageUploaded);
+    window.addEventListener('productSaved', handleImageUploaded);
+    
+    // Register listener for cleanup
+    RealtimeImageSync.registerListener('featuredProducts', unsubscribe);
+    
+    return () => {
+      unsubscribe();
+      window.removeEventListener('forceProductRefresh', handleForceRefresh);
+      window.removeEventListener('imageUploaded', handleImageUploaded);
+      window.removeEventListener('productSaved', handleImageUploaded);
+    };
+  }, []);
 
   const handleAddToCart = (product: any) => {
     addItem(product.id.toString(), product.name, product.price, product.image);
@@ -24,52 +105,29 @@ const FeaturedProducts = () => {
     navigate(`/product/${productId}`);
   };
 
-  const products = [
-    {
-      id: 1,
-      name: "Premium Basmati Rice",
-      price: "₹1,999",
-      originalPrice: "₹2,399",
-      rating: 4.8,
-      reviews: 156,
-      image: featuredImage,
-      badge: "Best Seller",
-      description: "Authentic long-grain basmati rice from the foothills of Himalayas"
-    },
-    {
-      id: 2,
-      name: "Spice Collection Box",
-      price: "₹3,679",
-      originalPrice: "₹4,479",
-      rating: 4.9,
-      reviews: 89,
-      image: featuredImage,
-      badge: "Premium",
-      description: "Handpicked spices including cardamom, cinnamon, and saffron"
-    },
-    {
-      id: 3,
-      name: "Brass Decorative Diya Set",
-      price: "₹2,799",
-      originalPrice: "₹3,439",
-      rating: 4.7,
-      reviews: 67,
-      image: featuredImage,
-      badge: "Handcrafted",
-      description: "Traditional brass oil lamps, perfect for festivals and decor"
-    },
-    {
-      id: 4,
-      name: "Organic Turmeric Powder",
-      price: "₹1,359",
-      originalPrice: "₹1,599",
-      rating: 4.9,
-      reviews: 234,
-      image: featuredImage,
-      badge: "Organic",
-      description: "Pure, organic turmeric powder with high curcumin content"
-    }
-  ];
+  if (loading) {
+    return (
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-4">
+              Featured Products
+            </h2>
+            <p className="text-lg text-soft-gray max-w-2xl mx-auto">
+              Discover our most popular authentic Indian products, carefully selected 
+              for quality and shipped fresh to your doorstep.
+            </p>
+          </div>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading featured products...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-background">

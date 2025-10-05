@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({
   showFooter = true 
 }) => {
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
+    <div className="min-h-screen bg-white pb-20 md:pb-0">
       {showHeader && <Header />}
       <main>
         {children}

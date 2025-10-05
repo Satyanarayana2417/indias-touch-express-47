@@ -208,7 +208,7 @@ const ProhibitedItems = () => {
         </section>
 
         {/* Categories Grid */}
-        <section className="py-8 md:py-16 bg-gray-50">
+        <section className="py-8 md:py-16 bg-white">
           <div className="container mx-auto px-3 md:px-4">
             {/* Dangerous / Hazardous Goods Card */}
             <CollapsibleProhibitedCard
@@ -337,3 +337,4 @@ const ProhibitedItems = () => {
 };
 
 export default ProhibitedItems;
+

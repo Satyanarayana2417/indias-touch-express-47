@@ -23,3 +23,4 @@ export const mapAuthError = (code: string): string => {
       return 'Authentication error. Please try again.';
   }
 };
+

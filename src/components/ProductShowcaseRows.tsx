@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/CartContext";
 import { useNavigate } from "react-router-dom";
+import { getProductsByCategory, Product as FirebaseProduct } from "@/lib/products";
 import featuredImage from "@/assets/featured-products.jpg";
 import heroShipping from "@/assets/hero-shipping.jpg";
 import { useRef, useState, useEffect } from "react";
@@ -13,89 +14,44 @@ const ProductShowcaseRows = () => {
   const decorCarouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState({ spices: false, decor: false });
   const [canScrollRight, setCanScrollRight] = useState({ spices: true, decor: true });
+  const [spiceProducts, setSpiceProducts] = useState<FirebaseProduct[]>([]);
+  const [decorProducts, setDecorProducts] = useState<FirebaseProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingSpices, setLoadingSpices] = useState(true);
+  const [loadingDecor, setLoadingDecor] = useState(true);
   const { addItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Sample product data for spices
-  const spiceProducts = [
-    {
-      id: 1,
-      name: "Premium Garam Masala",
-      price: "₹1,599",
-      image: "https://png.pngtree.com/png-vector/20240810/ourmid/pngtree-authentic-garam-masala-powder-for-rich-indian-flavors-png-image_13440740.png",
-    },
-    {
-      id: 2,
-      name: "Organic Turmeric Powder",
-      price: "₹1,099",
-      image: "https://media.istockphoto.com/id/1137344824/photo/turmeric-powder-and-roots-shot-from-above-on-white-background.jpg?s=612x612&w=0&k=20&c=f7q7ZkG-xp4ya1lLimbtdGj1hO5jafG46KEO3cRSsIA=",
-    },
-    {
-      id: 3,
-      name: "Cardamom Pods",
-      price: "₹2,099",
-      image: "https://media.istockphoto.com/id/1327578667/photo/cardamom-pods-isolated-on-white-background-top-view.jpg?s=612x612&w=0&k=20&c=Z4FXGWlmYi9qXTs26a4xsa2eZAzHDkdf_b_WFy_BnmI=",
-    },
-    {
-      id: 4,
-      name: "Kashmiri Red Chili",
-      price: "₹1,429",
-      image: "https://img.freepik.com/premium-vector/red-chili-powder-traditional-process-bowl-with-red-chili-powder-chilli-white-background_1045923-837.jpg",
-    },
-    {
-      id: 5,
-      name: "Cumin Seeds",
-      price: "₹1,259",
-      image: "https://www.shutterstock.com/image-photo/front-view-wooden-scoop-filled-600nw-2447634023.jpg",
-    },
-    {
-      id: 6,
-      name: "Coriander Powder",
-      price: "₹1,179",
-      image: "https://www.shutterstock.com/image-photo/coriander-powder-wooden-bowl-isolated-600nw-2414032011.jpg",
-    },
-  ];
+  // Load products from Firebase
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setLoadingSpices(true);
+        setLoadingDecor(true);
+        
+        // Load spice products (limit to 6 for carousel)
+        const spices = await getProductsByCategory('spices', 6);
+        setSpiceProducts(spices);
+        setLoadingSpices(false);
+        
+        // Load decorative products (limit to 6 for carousel)
+        const decoratives = await getProductsByCategory('decorative', 6);
+        setDecorProducts(decoratives);
+        setLoadingDecor(false);
+        
+      } catch (error) {
+        console.error('Error loading showcase products:', error);
+        setLoadingSpices(false);
+        setLoadingDecor(false);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Sample product data for home decor
-  const decorProducts = [
-    {
-      id: 401,
-      name: "Brass Diya Set",
-      price: "₹2,939",
-      image: "https://m.media-amazon.com/images/I/61eiR2QdMJL.jpg",
-    },
-    {
-      id: 402,
-      name: "Wooden Elephant Figurine",
-      price: "₹2,439",
-      image: "https://media.istockphoto.com/id/1129684071/photo/elephant-mother-and-baby-figurine.jpg?s=612x612&w=0&k=20&c=1xV50ZIJjo6ufDuTx_TMh25emQFuICXLtGu6NKnPnWc=",
-    },
-    {
-      id: 403,
-      name: "Mandala Wall Art",
-      price: "₹3,869",
-      image: "https://thumbs.dreamstime.com/b/easy-mandala-flower-coloring-white-background-vector-file-tattoo-design-wall-art-simple-wallpaper-paint-shirt-tile-341280604.jpg",
-    },
-    {
-      id: 404,
-      name: "Copper Water Bottle",
-      price: "₹2,779",
-      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbG-pWIAAyT4sFBMkQ4PZq0bA7GQjF4stUlA&s",
-    },
-    {
-      id: 405,
-      name: "Handwoven Table Runner",
-      price: "₹1,939",
-      image: "https://m.media-amazon.com/images/I/71EFRiqJvJL._UF1000,1000_QL80_.jpg",
-    },
-    {
-      id: 406,
-      name: "Ceramic Incense Holder",
-      price: "₹1,689",
-      image: "https://m.media-amazon.com/images/I/51UbjColCNL._UF894,1000_QL80_.jpg",
-    },
-  ];
+    loadProducts();
+  }, []);
 
   const scrollCarousel = (direction: 'left' | 'right', carouselRef: React.RefObject<HTMLDivElement>) => {
     if (carouselRef.current) {
@@ -150,30 +106,30 @@ const ProductShowcaseRows = () => {
     };
   }, []);
 
-  const addToCart = (productId: number, productName: string, productPrice: string) => {
-    addItem(productId.toString(), productName, productPrice);
+  const addToCart = (product: FirebaseProduct) => {
+    addItem(product.id || '', product.name, product.price);
     toast({
       title: "Added to cart",
-      description: `${productName} has been added to your cart.`,
+      description: `${product.name} has been added to your cart.`,
       duration: 2000,
     });
   };
 
-  const handleProductClick = (productId: number) => {
-    navigate(`/product/${productId}`);
+  const handleProductClick = (product: FirebaseProduct) => {
+    navigate(`/product/${product.id}`);
   };
 
   const ProductCard = ({ product, onAddToCart, onProductClick }: { 
-    product: { id: number; name: string; price: string; image: string }, 
-    onAddToCart: (id: number, name: string, price: string) => void,
-    onProductClick: (id: number) => void 
+    product: FirebaseProduct, 
+    onAddToCart: (product: FirebaseProduct) => void,
+    onProductClick: (product: FirebaseProduct) => void 
   }) => (
     <div className="flex-shrink-0 w-52 sm:w-56 group">
       <div 
         className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
-        onClick={() => onProductClick(product.id)}
+        onClick={() => onProductClick(product)}
       >
-        <div className="relative overflow-hidden bg-gray-50">
+        <div className="relative overflow-hidden bg-white">
           <button 
             className="absolute top-3 left-3 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
             onClick={(e) => e.stopPropagation()}
@@ -200,13 +156,14 @@ const ProductShowcaseRows = () => {
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              onAddToCart(product.id, product.name, product.price);
+              onAddToCart(product);
             }}
-            className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-sm py-2 transition-all duration-200"
+            className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-sm py-2 transition-all duration-200"
             variant="outline"
+            disabled={!product.inStock}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add
+            {product.inStock ? 'Add' : 'Out of Stock'}
           </Button>
         </div>
       </div>
@@ -220,15 +177,17 @@ const ProductShowcaseRows = () => {
     carouselRef, 
     onAddToCart,
     onProductClick,
-    scrollType 
+    scrollType,
+    loading
   }: {
     title: string;
     viewAllLink: string;
-    products: typeof spiceProducts;
+    products: FirebaseProduct[];
     carouselRef: React.RefObject<HTMLDivElement>;
-    onAddToCart: (id: number, name: string, price: string) => void;
-    onProductClick: (id: number) => void;
+    onAddToCart: (product: FirebaseProduct) => void;
+    onProductClick: (product: FirebaseProduct) => void;
     scrollType: 'spices' | 'decor';
+    loading?: boolean;
   }) => (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
@@ -248,7 +207,7 @@ const ProductShowcaseRows = () => {
         {(scrollType === 'spices' ? canScrollLeft.spices : canScrollLeft.decor) && (
           <Button
             onClick={() => scrollCarousel('left', carouselRef)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border hover:bg-gray-50 text-gray-600 p-0 transition-all duration-300"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border hover:bg-white text-gray-600 p-0 transition-all duration-300"
             variant="outline"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -258,7 +217,7 @@ const ProductShowcaseRows = () => {
         {(scrollType === 'spices' ? canScrollRight.spices : canScrollRight.decor) && (
           <Button
             onClick={() => scrollCarousel('right', carouselRef)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border hover:bg-gray-50 text-gray-600 p-0 transition-all duration-300"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-lg border hover:bg-white text-gray-600 p-0 transition-all duration-300"
             variant="outline"
           >
             <ChevronRight className="h-5 w-5" />
@@ -266,20 +225,30 @@ const ProductShowcaseRows = () => {
         )}
 
         {/* Product Carousel */}
-        <div
-          ref={carouselRef}
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-0"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={onAddToCart}
-              onProductClick={onProductClick}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : products.length > 0 ? (
+          <div
+            ref={carouselRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-0"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={onAddToCart}
+                onProductClick={onProductClick}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            No products available
+          </div>
+        )}
       </div>
     </div>
   );
@@ -341,6 +310,7 @@ const ProductShowcaseRows = () => {
               onAddToCart={addToCart}
               onProductClick={handleProductClick}
               scrollType="spices"
+              loading={loadingSpices}
             />
           </div>
         </div>
@@ -357,6 +327,7 @@ const ProductShowcaseRows = () => {
               onAddToCart={addToCart}
               onProductClick={handleProductClick}
               scrollType="decor"
+              loading={loadingDecor}
             />
           </div>
           
@@ -376,3 +347,4 @@ const ProductShowcaseRows = () => {
 };
 
 export default ProductShowcaseRows;
+

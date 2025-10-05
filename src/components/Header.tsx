@@ -295,7 +295,7 @@ const Header = () => {
           </div>
 
           {/* Secondary Navigation Bar */}
-          <div className="bg-gray-50 py-2">
+          <div className="bg-white py-2">
             <nav className="flex items-center space-x-3">
               <a 
                 href="/shop-products" 

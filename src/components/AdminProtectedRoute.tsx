@@ -23,7 +23,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Verifying admin access...</p>
@@ -50,7 +50,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) =
   if (!adminUser.email || !adminUser.uid) {
     console.error('Invalid admin user object detected');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center max-w-md">
           <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Security Error</h2>

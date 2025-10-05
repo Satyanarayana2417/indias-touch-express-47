@@ -164,7 +164,7 @@ const AddressModal = ({ isOpen, onClose, onAddressSelect }: AddressModalProps) =
           <h2 className="text-lg font-semibold text-gray-900">Select delivery address</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-white rounded-full transition-colors"
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
@@ -214,7 +214,7 @@ const AddressModal = ({ isOpen, onClose, onAddressSelect }: AddressModalProps) =
                 <div key={address.id} className="relative">
                   <div
                     onClick={() => handleAddressSelect(address)}
-                    className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-white transition-colors"
                   >
                     <MapPin className="h-5 w-5 text-gray-400 mt-1 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -235,7 +235,7 @@ const AddressModal = ({ isOpen, onClose, onAddressSelect }: AddressModalProps) =
                         e.stopPropagation();
                         setShowMoreOptions(showMoreOptions === address.id ? null : address.id);
                       }}
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-2 hover:bg-white rounded-full transition-colors"
                     >
                       <MoreHorizontal className="h-4 w-4 text-gray-400" />
                     </button>
@@ -246,7 +246,7 @@ const AddressModal = ({ isOpen, onClose, onAddressSelect }: AddressModalProps) =
                     <div className="absolute right-4 top-16 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
                       <button
                         onClick={() => handleMoreOptions(address.id, 'edit')}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-white"
                       >
                         Edit
                       </button>

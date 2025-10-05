@@ -61,7 +61,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
       variant="outline"
       onClick={handleGoogleSignIn}
       disabled={disabled || isLoading || isGoogleLoading}
-      className="w-full min-h-[44px] h-11 bg-white hover:bg-gray-50 active:bg-gray-100 border border-gray-300 shadow-sm text-gray-700 font-medium relative transition-all duration-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
+      className="w-full min-h-[44px] h-11 bg-white hover:bg-white active:bg-white border border-gray-300 shadow-sm text-gray-700 font-medium relative transition-all duration-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
     >
       {/* Google Logo */}
       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center justify-center">

@@ -56,3 +56,4 @@ export async function reverseGeocodeGoogle(lat: number, lng: number): Promise<Re
     longitude: lng
   };
 }
+

@@ -177,7 +177,7 @@ const OrderFlow: React.FC<OrderFlowProps> = ({ isOpen, onClose, onOrderComplete 
                           ? 'bg-green-500 text-white'
                           : step.current
                           ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-500'
+                          : 'bg-white text-gray-500'
                       }`}
                     >
                       {step.completed ? (

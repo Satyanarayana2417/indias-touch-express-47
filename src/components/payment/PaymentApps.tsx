@@ -179,7 +179,7 @@ const PaymentApps: React.FC<PaymentAppsProps> = ({
             <Button
               key={app.id}
               variant="outline"
-              className="h-16 p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="h-16 p-4 flex items-center justify-between hover:bg-white transition-colors"
               onClick={() => handleAppSelect(app)}
             >
               <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ const PaymentApps: React.FC<PaymentAppsProps> = ({
         </div>
 
         {/* Payment Details */}
-        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+        <div className="bg-white p-3 rounded-lg space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Amount:</span>
             <span className="font-bold text-primary">{formatPrice(amount)}</span>

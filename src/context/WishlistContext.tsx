@@ -1,10 +1,10 @@
-﻿import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 
 // Richer shape expected by Wishlist page
 export interface WishlistProduct {
   id: string;
   name: string;
-  price: string;          // keep display price (₹299) as-is for UI
+  price: string;          // keep display price (?299) as-is for UI
   image: string;
   originalPrice?: string;
   badges?: string[];
@@ -79,7 +79,7 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
       product = {
         id,
         name: name || 'Unknown Product',
-        price: typeof price === 'number' ? `₹${price}` : (price || '₹0'),
+        price: typeof price === 'number' ? `?${price}` : (price || '?0'),
         image: image || '/placeholder.svg'
       };
     }

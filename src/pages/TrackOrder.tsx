@@ -209,7 +209,7 @@ const TrackOrder = () => {
                             <p className="text-sm text-soft-gray mb-1">{event.location}</p>
                             <p className="text-sm text-soft-gray">{event.description}</p>
                             {index < mockOrderData.timeline.length - 1 && (
-                              <div className="mt-4 ml-3 w-0.5 h-6 bg-gray-200"></div>
+                              <div className="mt-4 ml-3 w-0.5 h-6 bg-white"></div>
                             )}
                           </div>
                         </div>

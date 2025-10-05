@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 // Public type for richer location data used by modals/components
 export interface LocationData {

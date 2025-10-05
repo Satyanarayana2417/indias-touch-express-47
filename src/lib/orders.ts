@@ -1,4 +1,4 @@
-﻿// Mock orders library without Firebase
+// Mock orders library without Firebase
 import { clearCartAfterCheckout } from './cart';
 
 export interface OrderItem {
@@ -195,3 +195,4 @@ export const searchOrders = async (searchTerm: string): Promise<Order[]> => {
     order.shippingAddress.fullName.toLowerCase().includes(term)
   );
 };
+

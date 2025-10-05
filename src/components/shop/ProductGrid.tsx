@@ -79,7 +79,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             {viewMode === 'grid' ? (
               // Grid View
               <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="relative overflow-hidden bg-gray-50">
+                <div className="relative overflow-hidden bg-white">
                   <button 
                     className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
                     onClick={(e) => onWishlistToggle(e, product.id)}
@@ -129,7 +129,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       e.stopPropagation();
                       onAddToCart(product);
                     }}
-                    className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
+                    className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
                     variant="outline"
                     disabled={!product.inStock}
                   >
@@ -141,7 +141,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             ) : (
               // List View
               <>
-                <div className="relative w-32 h-32 flex-shrink-0 mr-4 bg-gray-50 rounded-lg overflow-hidden">
+                <div className="relative w-32 h-32 flex-shrink-0 mr-4 bg-white rounded-lg overflow-hidden">
                   <button 
                     className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
                     onClick={(e) => onWishlistToggle(e, product.id)}
@@ -191,7 +191,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                       e.stopPropagation();
                       onAddToCart(product);
                     }}
-                    className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-sm py-2 px-6 transition-all duration-200"
+                    className="bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-sm py-2 px-6 transition-all duration-200"
                     variant="outline"
                     disabled={!product.inStock}
                   >

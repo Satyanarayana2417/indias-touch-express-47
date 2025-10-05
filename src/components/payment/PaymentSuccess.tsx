@@ -286,7 +286,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                   <Button 
                     onClick={onGoHome} 
                     variant="outline"
-                    className="border-gray-600 text-gray-600 hover:bg-gray-50 h-12"
+                    className="border-gray-600 text-gray-600 hover:bg-white h-12"
                   >
                     <Home className="h-4 w-4 mr-2" />
                     Continue Shopping

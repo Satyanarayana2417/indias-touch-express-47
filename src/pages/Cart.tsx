@@ -130,7 +130,7 @@ const Cart = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-4 py-16">
           <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-md mx-auto">
@@ -151,7 +151,7 @@ const Cart = () => {
   // Empty cart state
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-4 py-16">
           <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-md mx-auto">
@@ -179,7 +179,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+    <div className="min-h-screen bg-white pb-20 md:pb-0">
       <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Cart Header - Hidden on Mobile */}

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image URL Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-url {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image URL Upload Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Image URLs</h3>
+        <p>These are sample URLs you can use to test the image upload functionality:</p>
+        
+        <h4>Valid Image URLs:</h4>
+        <div>
+            <strong>Small JPEG:</strong><br>
+            <input type="text" class="test-url" value="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" readonly>
+            <button onclick="testUrl(this.previousElementSibling.value)">Test This URL</button>
+        </div>
+        
+        <div>
+            <strong>PNG Image:</strong><br>
+            <input type="text" class="test-url" value="https://i.imgur.com/example.png" readonly>
+            <button onclick="testUrl(this.previousElementSibling.value)">Test This URL</button>
+            <small>(Note: This may not be a real image - for demonstration)</small>
+        </div>
+        
+        <div>
+            <strong>Large Image (should be resized):</strong><br>
+            <input type="text" class="test-url" value="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=2000" readonly>
+            <button onclick="testUrl(this.previousElementSibling.value)">Test This URL</button>
+        </div>
+        
+        <h4>Invalid URLs (should show errors):</h4>
+        <div>
+            <strong>Non-image URL:</strong><br>
+            <input type="text" class="test-url" value="https://www.google.com" readonly>
+            <button onclick="testUrl(this.previousElementSibling.value)">Test This URL</button>
+        </div>
+        
+        <div>
+            <strong>404 Image:</strong><br>
+            <input type="text" class="test-url" value="https://example.com/nonexistent.jpg" readonly>
+            <button onclick="testUrl(this.previousElementSibling.value)">Test This URL</button>
+        </div>
+        
+        <div>
+            <strong>Invalid URL format:</strong><br>
+            <input type="text" class="test-url" value="not-a-url" readonly>
+            <button onclick="testUrl(this.previousElementSibling.value)">Test This URL</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Custom URL Test</h3>
+        <input type="text" id="customUrl" class="test-url" placeholder="Enter your own image URL here...">
+        <button onclick="testUrl(document.getElementById('customUrl').value)">Test Custom URL</button>
+    </div>
+    
+    <div id="results">
+        <h3>Test Results</h3>
+        <p>Test results will appear here...</p>
+    </div>
+
+    <script>
+        function testUrl(url) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!url.trim()) {
+                showResult('Please enter a URL to test', 'error');
+                return;
+            }
+            
+            showResult('Testing URL: ' + url, 'info');
+            
+            // Test 1: Client-side validation
+            try {
+                const urlObj = new URL(url.trim());
+                if (!['http:', 'https:'].includes(urlObj.protocol)) {
+                    showResult('❌ Client-side validation failed: URL must use HTTP or HTTPS', 'error');
+                    return;
+                }
+                
+                const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.svg'];
+                const pathname = urlObj.pathname.toLowerCase();
+                const hasImageExtension = imageExtensions.some(ext => pathname.endsWith(ext));
+                
+                const commonImageHosts = [
+                    'imgur.com', 'i.imgur.com', 'images.unsplash.com', 'unsplash.com',
+                    'pixabay.com', 'pexels.com', 'freepik.com', 'shutterstock.com',
+                    'istockphoto.com', 'getty.com', 'flickr.com', 'photobucket.com',
+                    'tinypic.com', 'postimg.cc', 'imgbb.com', 'imagekit.io', 'cloudinary.com',
+                    'amazonaws.com', 'googleusercontent.com', 'fbcdn.net', 'cdninstagram.com'
+                ];
+                
+                const hostname = urlObj.hostname.toLowerCase();
+                const isFromImageHost = commonImageHosts.some(host => 
+                    hostname === host || hostname.endsWith('.' + host)
+                );
+                
+                const hasImageQuery = pathname.includes('image') || urlObj.search.includes('image') || 
+                                     urlObj.search.includes('photo') || urlObj.search.includes('pic');
+                
+                if (!hasImageExtension && !isFromImageHost && !hasImageQuery) {
+                    showResult('❌ Client-side validation failed: URL does not appear to be an image', 'error');
+                    return;
+                }
+                
+                showResult('✅ Client-side validation passed', 'success');
+                
+            } catch (error) {
+                showResult('❌ Client-side validation failed: Invalid URL format', 'error');
+                return;
+            }
+            
+            // Test 2: Try to load the image
+            const img = new Image();
+            img.onload = function() {
+                showResult(`✅ Image loaded successfully (${img.width}x${img.height}px)`, 'success');
+                
+                // Show preview
+                const preview = document.createElement('img');
+                preview.src = url;
+                preview.className = 'preview-image';
+                preview.alt = 'Preview';
+                
+                const previewDiv = document.createElement('div');
+                previewDiv.innerHTML = '<strong>Preview:</strong><br>';
+                previewDiv.appendChild(preview);
+                
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.appendChild(previewDiv);
+            };
+            
+            img.onerror = function() {
+                showResult('❌ Failed to load image from URL', 'error');
+            };
+            
+            img.src = url;
+            
+            // Test 3: Check content type via HEAD request
+            fetch(url, { method: 'HEAD' })
+                .then(response => {
+                    if (!response.ok) {
+                        showResult(`❌ HTTP ${response.status}: ${response.statusText}`, 'error');
+                        return;
+                    }
+                    
+                    const contentType = response.headers.get('content-type') || '';
+                    const contentLength = response.headers.get('content-length');
+                    
+                    if (contentType.startsWith('image/')) {
+                        let message = `✅ Valid image content type: ${contentType}`;
+                        if (contentLength) {
+                            const sizeKB = Math.round(parseInt(contentLength) / 1024);
+                            message += ` (${sizeKB} KB)`;
+                        }
+                        showResult(message, 'success');
+                    } else {
+                        showResult(`❌ Invalid content type: ${contentType}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    showResult(`❌ Network error: ${error.message}`, 'error');
+                });
+        }
+        
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result ' + type;
+            resultDiv.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            
+            // Insert at the top (after the header)
+            const header = resultsDiv.querySelector('h3');
+            if (header.nextSibling) {
+                resultsDiv.insertBefore(resultDiv, header.nextSibling);
+            } else {
+                resultsDiv.appendChild(resultDiv);
+            }
+        }
+        
+        // Clear results on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>Test Results</h3><p>Test results will appear here...</p>';
+        });
+    </script>
+</body>
+</html>

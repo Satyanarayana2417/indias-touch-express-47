@@ -119,7 +119,7 @@ const CreditCardPanel: React.FC<CreditCardPanelProps> = ({
             placeholder="XXXX XXXX XXXX XXXX"
             value={cardNumber}
             onChange={handleCardNumberChange}
-            className={`${isMobile ? 'h-10 text-sm' : 'h-12'} bg-gray-50`}
+            className={`${isMobile ? 'h-10 text-sm' : 'h-12'} bg-white`}
             maxLength={19}
           />
         </div>
@@ -135,7 +135,7 @@ const CreditCardPanel: React.FC<CreditCardPanelProps> = ({
               placeholder="MM / YY"
               value={expiryDate}
               onChange={handleExpiryChange}
-              className={`${isMobile ? 'h-10 text-sm' : 'h-12'} bg-gray-50`}
+              className={`${isMobile ? 'h-10 text-sm' : 'h-12'} bg-white`}
               maxLength={5}
             />
           </div>
@@ -151,7 +151,7 @@ const CreditCardPanel: React.FC<CreditCardPanelProps> = ({
               placeholder="CVV"
               value={cvv}
               onChange={handleCvvChange}
-              className={`${isMobile ? 'h-10 text-sm' : 'h-12'} bg-gray-50`}
+              className={`${isMobile ? 'h-10 text-sm' : 'h-12'} bg-white`}
               maxLength={4}
               type="password"
             />

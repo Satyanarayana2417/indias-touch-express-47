@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialize Sample Products - Venkat Express</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .product-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .product-item {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Venkat Express - Sample Products Initializer</h1>
+        <p>This tool will create sample products for development and testing the Product Detail Page (PDP).</p>
+        
+        <div id="status"></div>
+        
+        <button onclick="createSampleProducts()">Create Sample Products</button>
+        <button onclick="clearProducts()">Clear All Products</button>
+        <button onclick="checkProducts()">Check Existing Products</button>
+        
+        <div id="productList"></div>
+        
+        <h3>📋 Instructions:</h3>
+        <ol>
+            <li>Click "Create Sample Products" to initialize the product database</li>
+            <li>Open the main application at <a href="http://localhost:8081" target="_blank">http://localhost:8081</a></li>
+            <li>Navigate to any product by clicking on product cards</li>
+            <li>Test the enhanced Product Detail Page features</li>
+        </ol>
+        
+        <h3>🧪 Test URLs:</h3>
+        <div id="testUrls"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const className = type === 'success' ? 'success' : '';
+            statusDiv.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+
+        function createSampleProducts() {
+            const sampleProducts = [
+                {
+                    id: 'sample-1',
+                    name: 'Premium Turmeric Powder',
+                    name_lowercase: 'premium turmeric powder',
+                    price: '299',
+                    originalPrice: '399',
+                    image: 'https://images.unsplash.com/photo-1594495894542-a46cc73e081a?w=500&h=500&fit=crop',
+                    images: [
+                        'https://images.unsplash.com/photo-1594495894542-a46cc73e081a?w=500&h=500&fit=crop',
+                        'https://images.unsplash.com/photo-1610641818989-c2051b5e2cfd?w=500&h=500&fit=crop',
+                        'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&h=500&fit=crop'
+                    ],
+                    description: 'Premium quality turmeric powder with high curcumin content. Perfect for cooking and health benefits.',
+                    detailedDescription: 'Our premium turmeric powder is sourced from the finest turmeric roots and ground to perfection. Rich in curcumin, it offers excellent anti-inflammatory properties and adds a golden color to your dishes.',
+                    category: 'spices',
+                    rating: 4.5,
+                    reviews: 120,
+                    badge: 'Best Seller',
+                    inStock: true,
+                    variants: [
+                        { name: '250g', price: 299, originalPrice: 399, stock: 50, isDefault: true },
+                        { name: '500g', price: 549, originalPrice: 699, stock: 30 },
+                        { name: '1kg', price: 999, originalPrice: 1299, stock: 15 }
+                    ],
+                    nutritionalInfo: 'Rich in curcumin, vitamin C, and antioxidants',
+                    ingredients: '100% Pure Turmeric Powder',
+                    origin: 'Karnataka, India',
+                    weight: '250g, 500g, 1kg options',
+                    dimensions: '10cm x 15cm x 5cm'
+                },
+                {
+                    id: 'sample-2',
+                    name: 'Organic Garam Masala',
+                    name_lowercase: 'organic garam masala',
+                    price: '199',
+                    originalPrice: '249',
+                    image: 'https://images.unsplash.com/photo-1596542804477-b8060a00ee95?w=500&h=500&fit=crop',
+                    images: [
+                        'https://images.unsplash.com/photo-1596542804477-b8060a00ee95?w=500&h=500&fit=crop',
+                        'https://images.unsplash.com/photo-1599814953235-bb5c4cf5ddc0?w=500&h=500&fit=crop'
+                    ],
+                    description: 'Authentic blend of aromatic spices for perfect Indian cuisine.',
+                    detailedDescription: 'Hand-ground blend of premium spices including cardamom, cinnamon, cloves, and bay leaves.',
+                    category: 'spices',
+                    rating: 4.7,
+                    reviews: 89,
+                    badge: 'Organic',
+                    inStock: true,
+                    variants: [
+                        { name: '100g', price: 199, originalPrice: 249, stock: 25, isDefault: true },
+                        { name: '250g', price: 449, originalPrice: 549, stock: 18 }
+                    ],
+                    nutritionalInfo: 'Contains antioxidants and essential oils',
+                    ingredients: 'Cardamom, Cinnamon, Cloves, Bay Leaves, Black Pepper',
+                    origin: 'Kerala, India',
+                    weight: '100g, 250g options'
+                },
+                {
+                    id: 'sample-3',
+                    name: 'Traditional Brass Diya Set',
+                    name_lowercase: 'traditional brass diya set',
+                    price: '899',
+                    originalPrice: '1199',
+                    image: 'https://images.unsplash.com/photo-1605379399843-5870eea9b74e?w=500&h=500&fit=crop',
+                    images: [
+                        'https://images.unsplash.com/photo-1605379399843-5870eea9b74e?w=500&h=500&fit=crop',
+                        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500&h=500&fit=crop'
+                    ],
+                    description: 'Beautiful handcrafted brass diyas perfect for festivals and daily prayers.',
+                    detailedDescription: 'Set of 6 traditional brass diyas with intricate designs. Perfect for Diwali, daily prayers, and special occasions.',
+                    category: 'decorative',
+                    rating: 4.8,
+                    reviews: 45,
+                    badge: 'Handmade',
+                    inStock: true,
+                    variants: [
+                        { name: 'Set of 6', price: 899, originalPrice: 1199, stock: 12, isDefault: true },
+                        { name: 'Set of 12', price: 1699, originalPrice: 2199, stock: 8 }
+                    ],
+                    ingredients: '100% Pure Brass',
+                    origin: 'Rajasthan, India',
+                    dimensions: '5cm diameter each diya'
+                },
+                {
+                    id: 'sample-4',
+                    name: 'Basmati Rice Premium',
+                    name_lowercase: 'basmati rice premium',
+                    price: '599',
+                    originalPrice: '699',
+                    image: 'https://images.unsplash.com/photo-1586201375761-83865001e8c3?w=500&h=500&fit=crop',
+                    description: 'Premium quality basmati rice with long grains and aromatic fragrance.',
+                    detailedDescription: 'Aged basmati rice with exceptional length and aroma. Perfect for biryani and pulao.',
+                    category: 'food',
+                    rating: 4.6,
+                    reviews: 234,
+                    badge: 'Premium',
+                    inStock: true,
+                    variants: [
+                        { name: '1kg', price: 599, originalPrice: 699, stock: 45, isDefault: true },
+                        { name: '5kg', price: 2899, originalPrice: 3399, stock: 20 },
+                        { name: '10kg', price: 5599, originalPrice: 6499, stock: 12 }
+                    ],
+                    nutritionalInfo: 'High in carbohydrates, low in fat',
+                    ingredients: '100% Basmati Rice',
+                    origin: 'Punjab, India',
+                    weight: '1kg, 5kg, 10kg options'
+                },
+                {
+                    id: 'sample-5',
+                    name: 'Handwoven Cotton Saree',
+                    name_lowercase: 'handwoven cotton saree',
+                    price: '2499',
+                    originalPrice: '3199',
+                    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&h=500&fit=crop',
+                    description: 'Beautiful handwoven cotton saree with traditional designs.',
+                    detailedDescription: 'Authentic handwoven cotton saree featuring traditional motifs and vibrant colors.',
+                    category: 'decorative',
+                    rating: 4.9,
+                    reviews: 67,
+                    badge: 'Handwoven',
+                    inStock: true,
+                    variants: [
+                        { name: 'One Size', price: 2499, originalPrice: 3199, stock: 8, isDefault: true }
+                    ],
+                    ingredients: '100% Pure Cotton',
+                    origin: 'West Bengal, India',
+                    dimensions: '6 meters length'
+                }
+            ];
+
+            try {
+                // Save to localStorage for development mode
+                localStorage.setItem('dev_products', JSON.stringify(sampleProducts));
+                localStorage.setItem('venkat_products', JSON.stringify(sampleProducts));
+                
+                showStatus('✅ Successfully created ' + sampleProducts.length + ' sample products!', 'success');
+                
+                displayProducts(sampleProducts);
+                displayTestUrls(sampleProducts);
+                
+                console.log('✅ Sample products created:', sampleProducts.length);
+                
+            } catch (error) {
+                showStatus('❌ Error creating products: ' + error.message);
+                console.error('Error creating products:', error);
+            }
+        }
+
+        function clearProducts() {
+            try {
+                localStorage.removeItem('dev_products');
+                localStorage.removeItem('venkat_products');
+                showStatus('🗑️ All products cleared!', 'success');
+                document.getElementById('productList').innerHTML = '';
+                document.getElementById('testUrls').innerHTML = '';
+            } catch (error) {
+                showStatus('❌ Error clearing products: ' + error.message);
+            }
+        }
+
+        function checkProducts() {
+            try {
+                const devProducts = localStorage.getItem('dev_products');
+                const venkatProducts = localStorage.getItem('venkat_products');
+                
+                const devCount = devProducts ? JSON.parse(devProducts).length : 0;
+                const venkatCount = venkatProducts ? JSON.parse(venkatProducts).length : 0;
+                
+                showStatus(`📊 Found ${devCount} dev products and ${venkatCount} venkat products`, 'success');
+                
+                if (devProducts) {
+                    displayProducts(JSON.parse(devProducts));
+                    displayTestUrls(JSON.parse(devProducts));
+                }
+            } catch (error) {
+                showStatus('❌ Error checking products: ' + error.message);
+            }
+        }
+
+        function displayProducts(products) {
+            const listDiv = document.getElementById('productList');
+            let html = '<div class="product-list"><h3>📦 Created Products:</h3>';
+            
+            products.forEach((product, index) => {
+                html += `<div class="product-item">
+                    ${index + 1}. <strong>${product.name}</strong> - ₹${product.price} 
+                    (${product.category}) - ${product.variants ? product.variants.length + ' variants' : 'No variants'}
+                </div>`;
+            });
+            
+            html += '</div>';
+            listDiv.innerHTML = html;
+        }
+
+        function displayTestUrls(products) {
+            const urlsDiv = document.getElementById('testUrls');
+            let html = '<div class="product-list">';
+            
+            products.forEach((product, index) => {
+                html += `<div class="product-item">
+                    ${index + 1}. <a href="http://localhost:8081/product/${product.id}" target="_blank">
+                        /product/${product.id}
+                    </a> - ${product.name}
+                </div>`;
+            });
+            
+            html += '</div>';
+            urlsDiv.innerHTML = html;
+        }
+
+        // Auto-check on page load
+        window.onload = function() {
+            checkProducts();
+        };
+    </script>
+</body>
+</html>

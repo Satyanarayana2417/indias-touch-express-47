@@ -505,7 +505,7 @@ const AdminProductRequests = () => {
           {selectedRequest && (
             <div className="space-y-6">
               {/* Request Status and Actions */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg">
                 <div className="flex items-center gap-2">
                   <Badge variant={getStatusColor(selectedRequest.status)} className="flex items-center gap-1">
                     {React.createElement(getStatusIcon(selectedRequest.status), { className: "h-3 w-3" })}

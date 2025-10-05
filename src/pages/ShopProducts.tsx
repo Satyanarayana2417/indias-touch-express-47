@@ -11,6 +11,8 @@ import { useAuth } from "@/context/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getAllProducts, subscribeToProducts, searchProductsAdvanced, Product as FirebaseProduct } from "@/lib/products";
+import RealtimeImageSync from "@/lib/realtimeImageSync";
 import featuredImage from "@/assets/featured-products.jpg";
 
 interface Product {
@@ -26,6 +28,20 @@ interface Product {
   badge?: string;
 }
 
+// Convert Firebase Product to local Product interface for compatibility
+const convertFirebaseProduct = (fbProduct: FirebaseProduct): Product => ({
+  id: parseInt(fbProduct.id || '0'),
+  name: fbProduct.name,
+  price: parseFloat(fbProduct.price.replace(/[^\d.]/g, '') || '0'),
+  originalPrice: fbProduct.originalPrice ? parseFloat(fbProduct.originalPrice.replace(/[^\d.]/g, '') || '0') : undefined,
+  image: fbProduct.image,
+  rating: fbProduct.rating || 0,
+  reviews: fbProduct.reviews || 0,
+  category: fbProduct.category,
+  badge: fbProduct.badge,
+  inStock: fbProduct.inStock
+});
+
 const ShopProducts = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -34,6 +50,8 @@ const ShopProducts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -41,100 +59,76 @@ const ShopProducts = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Mock products data
-  const allProducts: Product[] = [
-    {
-      id: 1,
-      name: "Premium Basmati Rice (5kg)",
-      price: 1999,
-      originalPrice: 2399,
-      image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500",
-      rating: 4.5,
-      reviews: 128,
-      category: "grains",
-      inStock: true,
-      badge: "Best Seller"
-    },
-    {
-      id: 2,
-      name: "Organic Turmeric Powder (500g)",
-      price: 1429,
-      originalPrice: 1689,
-      image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500",
-      rating: 4.7,
-      reviews: 95,
-      category: "spices",
-      inStock: true,
-      badge: "Organic"
-    },
-    {
-      id: 3,
-      name: "Green Cardamom Pods (100g)",
-      price: 2779,
-      originalPrice: 3289,
-      image: "https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=500",
-      rating: 4.6,
-      reviews: 67,
-      category: "spices",
-      inStock: true,
-      badge: "Premium"
-    },
-    {
-      id: 4,
-      name: "Toor Dal (Split Pigeon Peas) - 2kg",
-      price: 1099,
-      originalPrice: 1349,
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500",
-      rating: 4.4,
-      reviews: 42,
-      category: "grains",
-      inStock: true,
-      badge: "Protein Rich"
-    },
-    {
-      id: 5,
-      name: "Assorted Mithai Box",
-      price: 1299,
-      originalPrice: 1499,
-      image: "https://images.unsplash.com/photo-1599785209773-8b2f48444053?w=500",
-      rating: 4.8,
-      reviews: 156,
-      category: "sweets",
-      inStock: false
-    },
-    {
-      id: 6,
-      name: "Homemade Mango Pickle",
-      price: 249,
-      image: "https://images.unsplash.com/photo-1596040033229-a5b48b654d59?w=500",
-      rating: 4.3,
-      reviews: 89,
-      category: "pickles",
-      inStock: true
-    },
-    {
-      id: 7,
-      name: "Kashmiri Red Chili Powder",
-      price: 399,
-      originalPrice: 449,
-      image: "https://images.unsplash.com/photo-1583497491093-05802c5a2e40?w=500",
-      rating: 4.6,
-      reviews: 73,
-      category: "spices",
-      inStock: true
-    },
-    {
-      id: 8,
-      name: "Copper Water Bottle",
-      price: 1199,
-      originalPrice: 1399,
-      image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500",
-      rating: 4.2,
-      reviews: 34,
-      category: "kitchen",
-      inStock: true
-    }
-  ];
+  // Load products from Firebase with real-time sync
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        
+        // Get products from Firebase
+        const firebaseProducts = await getAllProducts();
+        
+        if (firebaseProducts.length > 0) {
+          // Convert Firebase products to local format
+          const convertedProducts = firebaseProducts.map(convertFirebaseProduct);
+          setAllProducts(convertedProducts);
+        } else {
+          // No products found - show empty state
+          setAllProducts([]);
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load products. Please try again later.",
+          variant: "destructive",
+        });
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Initial load
+    loadProducts();
+
+    // Set up real-time listener for all products
+    const unsubscribe = RealtimeImageSync.listenForProductChanges((firebaseProducts) => {
+      console.log('🛍️ Shop products updated in real-time');
+      if (firebaseProducts.length > 0) {
+        const convertedProducts = firebaseProducts.map(convertFirebaseProduct);
+        setAllProducts(convertedProducts);
+      } else {
+        setAllProducts([]);
+      }
+      setLoading(false);
+    });
+
+    // Listen for force refresh events
+    const handleForceRefresh = () => {
+      console.log('🔄 Force refreshing shop products');
+      loadProducts();
+    };
+
+    const handleImageUploaded = () => {
+      console.log('📸 Image uploaded, refreshing shop products');
+      setTimeout(loadProducts, 1000); // Small delay to ensure Firebase sync
+    };
+
+    window.addEventListener('forceProductRefresh', handleForceRefresh);
+    window.addEventListener('imageUploaded', handleImageUploaded);
+    window.addEventListener('productSaved', handleImageUploaded);
+
+    // Register listener for cleanup
+    RealtimeImageSync.registerListener('shopProducts', unsubscribe);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('forceProductRefresh', handleForceRefresh);
+      window.removeEventListener('imageUploaded', handleImageUploaded);
+      window.removeEventListener('productSaved', handleImageUploaded);
+    };
+  }, []);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
@@ -267,15 +261,24 @@ const ShopProducts = () => {
 
           {/* Products Grid */}
           <div className="flex-1 mt-4 lg:mt-0">
-            <ProductGrid
-              products={filteredProducts}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              onProductClick={handleProductClick}
-              onAddToCart={handleAddToCart}
-              onWishlistToggle={handleWishlistToggle}
-              isInWishlist={isInWishlist}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading products...</p>
+                </div>
+              </div>
+            ) : (
+              <ProductGrid
+                products={filteredProducts}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                onProductClick={handleProductClick}
+                onAddToCart={handleAddToCart}
+                onWishlistToggle={handleWishlistToggle}
+                isInWishlist={isInWishlist}
+              />
+            )}
           </div>
         </div>
 

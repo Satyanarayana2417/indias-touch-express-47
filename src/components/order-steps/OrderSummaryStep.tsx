@@ -70,7 +70,7 @@ const OrderSummaryStep: React.FC<OrderSummaryStepProps> = ({ orderData, onNext, 
                 {items.map((item) => (
                   <div key={`${item.id}-${item.variant || ''}`} className={`flex items-center gap-4 ${isMobile ? 'p-3' : 'p-4'} border border-gray-200 rounded-lg`}>
                     <div className="flex-shrink-0">
-                      <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-gray-100 rounded-lg overflow-hidden`}>
+                      <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-white rounded-lg overflow-hidden`}>
                         {item.image && item.image !== '/placeholder.svg' ? (
                           <img
                             src={item.image}

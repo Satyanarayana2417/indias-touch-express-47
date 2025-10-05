@@ -10,11 +10,19 @@ interface ProductTabsProps {
 const ProductTabs: React.FC<ProductTabsProps> = ({ product }) => {
   return (
     <Tabs defaultValue="description" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="description">Description</TabsTrigger>
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
-        <TabsTrigger value="reviews">Reviews</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+        <TabsTrigger value="description" className="text-xs sm:text-sm p-2 sm:p-3">
+          Description
+        </TabsTrigger>
+        <TabsTrigger value="details" className="text-xs sm:text-sm p-2 sm:p-3">
+          Details
+        </TabsTrigger>
+        <TabsTrigger value="nutrition" className="text-xs sm:text-sm p-2 sm:p-3">
+          Nutrition
+        </TabsTrigger>
+        <TabsTrigger value="reviews" className="text-xs sm:text-sm p-2 sm:p-3">
+          Reviews
+        </TabsTrigger>
       </TabsList>
       
       <TabsContent value="description" className="mt-6">

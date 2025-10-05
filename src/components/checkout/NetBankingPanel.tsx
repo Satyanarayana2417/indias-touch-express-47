@@ -152,7 +152,7 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
       name: 'Federal Bank',
       code: 'FEDERAL',
       logoIcon: (
-        <div className="w-8 h-8 bg-gray-500 rounded flex items-center justify-center shadow-md">
+        <div className="w-8 h-8 bg-white0 rounded flex items-center justify-center shadow-md">
           <div className="w-4 h-3 bg-white rounded-sm flex items-center justify-center">
             <div className="text-gray-500 text-[8px] font-bold">F</div>
           </div>
@@ -337,7 +337,7 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
                         flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors
                         ${selectedBank === bank.id 
                           ? 'border-gray-500 bg-white shadow-sm' 
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-white'
                         }
                       `}
                     >
@@ -451,7 +451,7 @@ const NetBankingPanel: React.FC<NetBankingPanelProps> = ({
         )}
 
         {/* Enhanced Information Section */}
-        <div className={`bg-gray-50 border rounded-lg ${isMobile ? 'p-4 mt-4' : 'p-4 mt-6'}`}>
+        <div className={`bg-white border rounded-lg ${isMobile ? 'p-4 mt-4' : 'p-4 mt-6'}`}>
           <div className={`flex items-center gap-2 ${isMobile ? 'mb-4' : 'mb-3'}`}>
             <Info className={`text-blue-600 ${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
             <div className={`text-gray-800 font-medium ${isMobile ? 'text-base' : 'text-base'}`}>

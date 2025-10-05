@@ -358,7 +358,7 @@ const ShopProducts = () => {
                   className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     selectedCategory === category.id
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-white'
                   }`}
                 >
                   {category.name}
@@ -584,7 +584,7 @@ const ShopProducts = () => {
                     onClick={() => handleProductClick(product.id)}
                   >
                     <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                      <div className="relative overflow-hidden bg-gray-50">
+                      <div className="relative overflow-hidden bg-white">
                         <button 
                           className="absolute top-2 left-2 p-1 sm:p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all z-10"
                           onClick={(e) => handleWishlistToggle(e, product.id)}
@@ -628,7 +628,7 @@ const ShopProducts = () => {
                             e.stopPropagation();
                             handleAddToCart(product);
                           }}
-                          className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
+                          className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-xs sm:text-sm py-1.5 sm:py-2 transition-all duration-200"
                           variant="outline"
                           disabled={!product.inStock}
                         >
@@ -728,7 +728,7 @@ const ShopProducts = () => {
 
                           {/* List View Add to Cart */}
                           <Button 
-                            className="w-full md:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-sm py-2 transition-all duration-200"
+                            className="w-full md:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-white font-medium text-sm py-2 transition-all duration-200"
                             variant="outline"
                             disabled={!product.inStock}
                             onClick={() => product.inStock && handleAddToCart(product)}

@@ -129,7 +129,7 @@ const QRCodePayment: React.FC<QRCodePaymentProps> = ({
         </div>
 
         {/* UPI Details */}
-        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+        <div className="bg-white p-3 rounded-lg space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">UPI ID:</span>
             <div className="flex items-center gap-2">

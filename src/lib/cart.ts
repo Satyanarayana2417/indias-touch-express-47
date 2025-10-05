@@ -377,3 +377,4 @@ export const getCartItemCount = async (): Promise<number> => {
     return 0;
   }
 };
+

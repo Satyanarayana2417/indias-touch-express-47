@@ -1,7 +1,9 @@
-﻿// Firebase core imports
+// Firebase core imports
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getFunctions, Functions } from 'firebase/functions';
 
 // Production Firebase configuration (provided)
 // NOTE: This file intentionally hardcodes the config per project requirements.
@@ -21,6 +23,8 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
+let storage: FirebaseStorage;
+let functions: Functions;
 
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
@@ -30,6 +34,8 @@ if (!getApps().length) {
 
 auth = getAuth(app);
 db = getFirestore(app);
+storage = getStorage(app);
+functions = getFunctions(app);
 
 // Configure Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
@@ -37,5 +43,6 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-export { app, auth, db };
+export { app, auth, db, storage, functions };
 export default app;
+

@@ -466,7 +466,7 @@ const AdminOrders = () => {
           {selectedOrder && (
             <div className="space-y-6">
               {/* Order Status and Actions */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white rounded-lg">
                 <div className="flex items-center gap-2">
                   <Badge variant={getStatusColor(selectedOrder.status)} className="flex items-center gap-1">
                     {React.createElement(getStatusIcon(selectedOrder.status), { className: "h-3 w-3" })}
@@ -590,7 +590,7 @@ const AdminOrders = () => {
                   </div>
 
                   {/* Order Total */}
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
+                  <div className="mt-4 p-4 bg-white rounded-lg space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal:</span>
                       <span>{formatPrice(selectedOrder.subtotal)}</span>

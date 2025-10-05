@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Debug</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { margin: 5px; padding: 10px; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>Admin Debug Tool</h1>
+    
+    <div class="section">
+        <h2>Development Mode Check</h2>
+        <p>Current URL: <span id="currentUrl"></span></p>
+        <p>Environment: <span id="environment"></span></p>
+    </div>
+    
+    <div class="section">
+        <h2>LocalStorage Data</h2>
+        <button onclick="checkLocalStorage()">Check Admin Session</button>
+        <button onclick="simulateLogin()">Simulate Admin Login</button>
+        <button onclick="clearSession()">Clear Session</button>
+        <pre id="storageData"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Quick Actions</h2>
+        <button onclick="goToAdminLogin()">Go to Admin Login</button>
+        <button onclick="goToAdminDashboard()">Go to Admin Dashboard</button>
+        <button onclick="goToAddProduct()">Go to Add Product</button>
+    </div>
+    
+    <div class="section">
+        <h2>Console Log</h2>
+        <button onclick="clearLog()">Clear Log</button>
+        <pre id="console"></pre>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('console');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function appendLog(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            logElement.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            appendLog('log', ...args);
+        };
+        
+        console.error = (...args) => {
+            originalError.apply(console, args);
+            appendLog('error', ...args);
+        };
+        
+        // Initialize
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('environment').textContent = 'Development (demo Firebase config)';
+        
+        function checkLocalStorage() {
+            const adminUser = localStorage.getItem('mockAdminUser');
+            const userData = localStorage.getItem('mockUser');
+            const sessionStart = localStorage.getItem('adminSessionStart');
+            
+            const data = {
+                mockAdminUser: adminUser ? JSON.parse(adminUser) : null,
+                mockUser: userData ? JSON.parse(userData) : null,
+                adminSessionStart: sessionStart,
+                allKeys: Object.keys(localStorage)
+            };
+            
+            document.getElementById('storageData').textContent = JSON.stringify(data, null, 2);
+            console.log('LocalStorage data:', data);
+        }
+        
+        function simulateLogin() {
+            const mockAdmin = {
+                uid: 'admin-' + Date.now(),
+                email: 'admin@venkatexpress.com',
+                displayName: 'Admin User'
+            };
+            
+            localStorage.setItem('mockAdminUser', JSON.stringify(mockAdmin));
+            localStorage.setItem('adminSessionStart', Date.now().toString());
+            console.log('Simulated admin login:', mockAdmin);
+            checkLocalStorage();
+            alert('Admin login simulated! Try accessing admin pages now.');
+        }
+        
+        function clearSession() {
+            localStorage.removeItem('mockAdminUser');
+            localStorage.removeItem('adminSessionStart');
+            console.log('Admin session cleared');
+            checkLocalStorage();
+        }
+        
+        function goToAdminLogin() {
+            window.location.href = '/admin/login';
+        }
+        
+        function goToAdminDashboard() {
+            window.location.href = '/admin/dashboard';
+        }
+        
+        function goToAddProduct() {
+            window.location.href = '/admin/products/new';
+        }
+        
+        function clearLog() {
+            logElement.textContent = '';
+        }
+        
+        // Initial check
+        checkLocalStorage();
+        console.log('Admin debug tool loaded');
+    </script>
+</body>
+</html>

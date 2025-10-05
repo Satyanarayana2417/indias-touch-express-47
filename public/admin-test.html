@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup & Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button.secondary {
+            background: #6b7280;
+        }
+        button.secondary:hover {
+            background: #4b5563;
+        }
+        button.success {
+            background: #10b981;
+        }
+        button.success:hover {
+            background: #059669;
+        }
+        button.danger {
+            background: #ef4444;
+        }
+        button.danger:hover {
+            background: #dc2626;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            overflow: auto;
+            font-size: 13px;
+            line-height: 1.4;
+            max-height: 400px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .quick-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .quick-links a {
+            text-decoration: none;
+            color: white;
+            background: #059669;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .quick-links a:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Admin Setup & Product Test</h1>
+            <p>Diagnose and fix admin product addition issues</p>
+        </div>
+
+        <div class="section">
+            <h3>📊 Current Status</h3>
+            <div id="status"></div>
+            <button onclick="checkStatus()" class="secondary">🔄 Refresh Status</button>
+        </div>
+
+        <div class="section">
+            <h3>🚀 Quick Setup</h3>
+            <p>Run this to set up admin access and test product creation:</p>
+            <button onclick="runFullTest()" class="success">▶️ Run Complete Test</button>
+            <button onclick="setupAdminOnly()" class="secondary">👤 Setup Admin Only</button>
+            <button onclick="clearAllData()" class="danger">🗑️ Clear All Data</button>
+        </div>
+
+        <div class="section">
+            <h3>🔗 Quick Links</h3>
+            <div class="quick-links">
+                <a href="/admin/login" target="_blank">Admin Login</a>
+                <a href="/admin/dashboard" target="_blank">Admin Dashboard</a>
+                <a href="/admin/products" target="_blank">Products List</a>
+                <a href="/admin/products/new" target="_blank">Add Product</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📝 Console Output</h3>
+            <button onclick="clearConsole()" class="secondary">Clear Console</button>
+            <pre id="console"></pre>
+        </div>
+    </div>
+
+    <script src="/test-admin-setup.js"></script>
+    <script>
+        const statusDiv = document.getElementById('status');
+        const consoleDiv = document.getElementById('console');
+        
+        // Capture console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            appendToConsole('LOG', args);
+        };
+        
+        console.error = (...args) => {
+            originalError.apply(console, args);
+            appendToConsole('ERROR', args);
+        };
+        
+        function appendToConsole(type, args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleDiv.textContent += `[${timestamp}] ${type}: ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        function checkStatus() {
+            const adminUser = localStorage.getItem('mockAdminUser');
+            const products = localStorage.getItem('devProducts');
+            const sessionStart = localStorage.getItem('adminSessionStart');
+            
+            let html = '';
+            
+            if (adminUser) {
+                const admin = JSON.parse(adminUser);
+                html += `<div class="status success">✅ Admin logged in: ${admin.email}</div>`;
+            } else {
+                html += `<div class="status error">❌ No admin user found</div>`;
+            }
+            
+            if (products) {
+                const productsList = JSON.parse(products);
+                html += `<div class="status success">✅ Products in storage: ${productsList.length}</div>`;
+            } else {
+                html += `<div class="status info">ℹ️ No products in storage yet</div>`;
+            }
+            
+            if (sessionStart) {
+                const age = Math.round((Date.now() - parseInt(sessionStart)) / 1000 / 60);
+                html += `<div class="status info">ℹ️ Session age: ${age} minutes</div>`;
+            } else {
+                html += `<div class="status error">❌ No active session</div>`;
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+        
+        function runFullTest() {
+            console.log('🚀 Starting full admin product test...');
+            if (typeof runAdminProductTest === 'function') {
+                const result = runAdminProductTest();
+                setTimeout(checkStatus, 500);
+                return result;
+            } else {
+                console.error('❌ Test script not loaded');
+            }
+        }
+        
+        function setupAdminOnly() {
+            console.log('👤 Setting up admin session only...');
+            if (typeof setupAdminSession === 'function') {
+                const result = setupAdminSession();
+                setTimeout(checkStatus, 500);
+                return result;
+            } else {
+                console.error('❌ Setup script not loaded');
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('This will clear all admin session and product data. Continue?')) {
+                if (typeof clearEverything === 'function') {
+                    clearEverything();
+                    setTimeout(checkStatus, 500);
+                } else {
+                    localStorage.clear();
+                    console.log('✅ LocalStorage cleared manually');
+                }
+            }
+        }
+        
+        function clearConsole() {
+            consoleDiv.textContent = '';
+        }
+        
+        // Initial status check
+        checkStatus();
+        console.log('🔧 Admin Setup & Test page loaded');
+    </script>
+</body>
+</html>

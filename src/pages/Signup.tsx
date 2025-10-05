@@ -125,7 +125,7 @@ const Signup: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col bg-gray-50 pb-20 md:pb-0">
+      <div className="min-h-screen flex flex-col bg-white pb-20 md:pb-0">
         <Header />
         <div className="flex-grow container mx-auto px-4 py-16">
           <div className="max-w-md mx-auto">

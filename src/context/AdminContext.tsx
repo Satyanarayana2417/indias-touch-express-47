@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -26,13 +26,15 @@ const AUTHORIZED_ADMIN_EMAILS = [
   'admin@venkatexpress.com',
   'satyanarayana2417@gmail.com',
   'venkatexpress@gmail.com',
+  'neha@gmail.com',
   // Add more authorized admin emails here
 ];
 
 // Check if we're in development mode
 const isDevMode = import.meta.env.DEV || 
                   import.meta.env.VITE_FIREBASE_API_KEY === undefined || 
-                  import.meta.env.VITE_FIREBASE_API_KEY === "placeholder-api-key";
+                  import.meta.env.VITE_FIREBASE_API_KEY === "placeholder-api-key" ||
+                  import.meta.env.VITE_FIREBASE_API_KEY === "demo";
 
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [adminUser, setAdminUser] = useState<User | null>(null);

@@ -159,7 +159,7 @@ const AdminDashboard = () => {
               const Icon = action.icon;
               return (
                 <Link key={index} to={action.href}>
-                  <div className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center p-4 border rounded-lg hover:bg-white transition-colors">
                     <div className={`${action.color} p-2 rounded-lg text-white mr-4`}>
                       <Icon className="h-5 w-5" />
                     </div>

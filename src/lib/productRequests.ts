@@ -1,4 +1,4 @@
-﻿// Mock product requests library without Firebase
+// Mock product requests library without Firebase
 
 export interface ProductRequest {
   id?: string;
@@ -158,3 +158,4 @@ export const getProductRequestStats = async () => {
     lowPriority: requests.filter((r: ProductRequest) => r.priority === 'low').length
   };
 };
+

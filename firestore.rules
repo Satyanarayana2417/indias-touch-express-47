@@ -40,6 +40,22 @@ service cloud.firestore {
 			allow list: if false; // Prevent listing all orders
 		}
 
+		// Products collection - public read access, admin-only write access
+		match /products/{productId} {
+			// Allow public read access for all products
+			allow read: if true;
+			allow list: if true;
+			
+			// Only allow admin users to create, update, or delete products
+			allow create, update, delete: if request.auth != null && 
+				request.auth.token.email in [
+					'admin@venkatexpress.com',
+					'satyanarayana2417@gmail.com', 
+					'venkatexpress@gmail.com',
+					'neha@gmail.com'
+				];
+		}
+
 		// Fallback: deny everything else by default (defense in depth)
 		match /{document=**} {
 			allow read, write: if false;

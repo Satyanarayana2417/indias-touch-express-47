@@ -34,12 +34,17 @@ import {
   Trash2
 } from 'lucide-react';
 import { Product, ProductVariant, addProduct, getProductById, updateProduct } from '@/lib/products';
+import { ImageUploadService } from '@/lib/imageUpload';
+import EnhancedImageUpload from '@/components/ui/enhanced-image-upload';
 import { useToast } from '@/hooks/use-toast';
+import { useAdmin } from '@/context/AdminContext';
+import RealtimeImageSync from '@/lib/realtimeImageSync';
 
 const AdminProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin, loading: adminLoading } = useAdmin();
   const isEdit = !!id;
 
   // Form state
@@ -77,15 +82,22 @@ const AdminProductForm = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const categories = [
-    'Food',
-    'Decor',
-    'Spices',
-    'Rice & Grains',
-    'Snacks',
-    'Sweets',
-    'Decorative Items',
-    'Religious Items',
-    'Handicrafts'
+    'spices',
+    'rice-grains', 
+    'sweets',
+    'pickles',
+    'oils-ghee',
+    'beverages',
+    'religious-items',
+    'home-decor',
+    'art-craft',
+    'kitchen',
+    'health-supplements',
+    'books',
+    'clothing',
+    'beauty-wellness',
+    'sweeteners',
+    'decorative'
   ];
 
   // Load product data for editing
@@ -136,9 +148,26 @@ const AdminProductForm = () => {
     try {
       setUploadingImage(true);
       
-      // In a real app, you would upload to Cloudinary or Firebase Storage
-      // For now, we'll create a mock URL
-      const imageUrl = URL.createObjectURL(file);
+      // Validate file
+      const validation = ImageUploadService.validateFile(file);
+      if (!validation.isValid) {
+        toast({
+          title: "Error",
+          description: validation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Compress image before upload
+      const compressedFile = await ImageUploadService.compressImage(file);
+      
+      // Upload to Firebase Storage
+      const imageUrl = await ImageUploadService.uploadProductImage(
+        compressedFile,
+        id, // product ID (if editing)
+        !productData.image // is main image if no main image exists
+      );
       
       if (!productData.image) {
         handleInputChange('image', imageUrl);
@@ -151,11 +180,14 @@ const AdminProductForm = () => {
         title: "Success",
         description: "Image uploaded successfully.",
       });
+
+      // Trigger real-time sync
+      RealtimeImageSync.onImageUploaded(id);
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
         title: "Error",
-        description: "Failed to upload image.",
+        description: error instanceof Error ? error.message : "Failed to upload image.",
         variant: "destructive",
       });
     } finally {
@@ -163,12 +195,37 @@ const AdminProductForm = () => {
     }
   };
 
-  const removeImage = (imageUrl: string, isMain: boolean = false) => {
-    if (isMain) {
-      handleInputChange('image', '');
-    } else {
-      const currentImages = productData.images || [];
-      handleInputChange('images', currentImages.filter(img => img !== imageUrl));
+  const removeImage = async (imageUrl: string, isMain: boolean = false) => {
+    try {
+      // Delete from Firebase Storage
+      await ImageUploadService.deleteImage(imageUrl);
+      
+      if (isMain) {
+        handleInputChange('image', '');
+      } else {
+        const currentImages = productData.images || [];
+        handleInputChange('images', currentImages.filter(img => img !== imageUrl));
+      }
+
+      toast({
+        title: "Success",
+        description: "Image removed successfully.",
+      });
+    } catch (error) {
+      console.error('Error removing image:', error);
+      toast({
+        title: "Warning",
+        description: "Image removed from form but may still exist in storage.",
+        variant: "destructive",
+      });
+      
+      // Still remove from UI even if storage deletion fails
+      if (isMain) {
+        handleInputChange('image', '');
+      } else {
+        const currentImages = productData.images || [];
+        handleInputChange('images', currentImages.filter(img => img !== imageUrl));
+      }
     }
   };
 
@@ -232,32 +289,75 @@ const AdminProductForm = () => {
     try {
       setLoading(true);
 
+      let productId: string;
+      
       if (isEdit && id) {
         await updateProduct(id, productData as Product);
+        productId = id;
         toast({
           title: "Success",
           description: "Product updated successfully.",
         });
       } else {
-        await addProduct(productData as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>);
+        const newProductId = await addProduct(productData as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>);
+        productId = newProductId;
         toast({
           title: "Success",
           description: "Product added successfully.",
         });
       }
 
+      // Trigger real-time sync for immediate website update
+      RealtimeImageSync.onProductSaved(productId);
+
       navigate('/admin/products');
     } catch (error) {
       console.error('Error saving product:', error);
+      
+      // Handle different types of errors
+      let errorMessage = "Failed to save product. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Access denied')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('Missing or insufficient permissions')) {
+          errorMessage = "Access denied. You must be logged in as an administrator to perform this action.";
+        } else if (error.message.includes('Failed to add product') || error.message.includes('Failed to update product')) {
+          errorMessage = "Failed to save product. Please check your internet connection and try again.";
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to save product. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+
+  // Show loading while checking admin status
+  if (adminLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p>Verifying admin access...</p>
+      </div>
+    );
+  }
+
+  // Redirect if not admin
+  if (!isAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-12">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
+        <p className="text-gray-600 mb-6">You must be logged in as an administrator to access this page.</p>
+        <Button onClick={() => navigate('/admin/login')}>
+          Go to Admin Login
+        </Button>
+      </div>
+    );
+  }
 
   if (loading && isEdit) {
     return (
@@ -382,82 +482,24 @@ const AdminProductForm = () => {
         <Card>
           <CardHeader>
             <CardTitle>Product Images</CardTitle>
+            <p className="text-sm text-gray-600">Upload images from your computer or fetch them directly from a URL</p>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div>
-                <Label>Main Product Image</Label>
-                {productData.image ? (
-                  <div className="mt-2 relative inline-block">
-                    <img
-                      src={productData.image}
-                      alt="Main product"
-                      className="w-32 h-32 object-cover rounded-lg border"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute -top-2 -right-2"
-                      onClick={() => removeImage(productData.image!, true)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No main image uploaded</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Additional Images */}
-              <div>
-                <Label>Additional Images</Label>
-                <div className="mt-2 grid grid-cols-4 gap-4">
-                  {productData.images?.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={image}
-                        alt={`Product ${index + 1}`}
-                        className="w-24 h-24 object-cover rounded-lg border"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute -top-2 -right-2"
-                        onClick={() => removeImage(image)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Upload Button */}
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  disabled={uploadingImage}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploadingImage ? 'Uploading...' : 'Upload Image'}
-                </Button>
-              </div>
-            </div>
+          <CardContent>
+            <EnhancedImageUpload
+              onImageUploaded={(imageUrl) => {
+                if (!productData.image) {
+                  handleInputChange('image', imageUrl);
+                } else {
+                  const currentImages = productData.images || [];
+                  handleInputChange('images', [...currentImages, imageUrl]);
+                }
+              }}
+              onImageRemoved={removeImage}
+              currentImages={productData.images || []}
+              mainImage={productData.image}
+              productId={id}
+              disabled={uploadingImage}
+            />
           </CardContent>
         </Card>
 

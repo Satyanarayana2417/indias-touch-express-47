@@ -209,7 +209,7 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
             onClick={() => handleLocationRequest('session')}
             disabled={isLoading}
             variant="outline"
-            className="w-full h-10 md:h-12 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors disabled:opacity-50 text-sm md:text-base"
+            className="w-full h-10 md:h-12 border-gray-300 text-gray-700 hover:bg-white font-medium rounded-lg transition-colors disabled:opacity-50 text-sm md:text-base"
           >
             {isLoading && loadingType === 'session' ? (
               <div className="flex items-center space-x-2">
@@ -225,7 +225,7 @@ const LocationModal = ({ isOpen, onClose, onLocationChoice }: LocationModalProps
             onClick={handleDeny}
             disabled={isLoading}
             variant="ghost"
-            className="w-full h-10 md:h-12 text-gray-500 hover:text-gray-700 hover:bg-gray-100 font-medium rounded-lg transition-colors disabled:opacity-50 text-sm md:text-base"
+            className="w-full h-10 md:h-12 text-gray-500 hover:text-gray-700 hover:bg-white font-medium rounded-lg transition-colors disabled:opacity-50 text-sm md:text-base"
           >
             Don't Allow
           </Button>

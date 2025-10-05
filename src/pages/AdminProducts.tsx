@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -39,41 +46,50 @@ import {
   Trash2, 
   Eye,
   Package,
-  AlertCircle
+  AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  RefreshCw
 } from 'lucide-react';
-import { Product, getAllProducts, deleteProduct } from '@/lib/products';
+import { Product, getAllProducts, deleteProduct, subscribeToProducts, getLowStockProducts, getOutOfStockProducts } from '@/lib/products';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  const [outOfStockProducts, setOutOfStockProducts] = useState<Product[]>([]);
   const { toast } = useToast();
 
-  // Load products on component mount
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  // Filter products when search term or category changes
-  useEffect(() => {
-    filterProducts();
-  }, [products, searchTerm, categoryFilter]);
-
-  const loadProducts = async () => {
+  // Manual refresh function
+  const handleRefresh = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Manually refreshing products...');
+      
+      // Get products directly first
       const allProducts = await getAllProducts();
+      console.log('📦 Loaded products:', allProducts.length);
+      
       setProducts(allProducts);
+      await loadStockAlerts();
+      
+      toast({
+        title: "Success",
+        description: `Loaded ${allProducts.length} products`,
+      });
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Error refreshing products:', error);
       toast({
         title: "Error",
-        description: "Failed to load products. Please try again.",
+        description: "Failed to refresh products. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -81,14 +97,77 @@ const AdminProducts = () => {
     }
   };
 
-  const filterProducts = () => {
+  // Load products on component mount with real-time sync
+  useEffect(() => {
+    let isActive = true;
+    
+    const loadInitialProducts = async () => {
+      try {
+        setLoading(true);
+        console.log('🚀 Loading initial products...');
+        
+        // Load products directly first
+        const allProducts = await getAllProducts();
+        console.log('📦 Initial products loaded:', allProducts.length);
+        
+        if (isActive) {
+          setProducts(allProducts);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading initial products:', error);
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Load initial products
+    loadInitialProducts();
+
+    // Set up real-time subscription
+    const unsubscribe = subscribeToProducts((products) => {
+      if (isActive) {
+        console.log('🔄 Real-time products update:', products.length);
+        setProducts(products);
+        if (loading) {
+          setLoading(false);
+        }
+      }
+    });
+
+    // Load stock alerts
+    loadStockAlerts();
+
+    return () => {
+      isActive = false;
+      unsubscribe();
+    };
+  }, []);
+
+  // Load stock alerts
+  const loadStockAlerts = async () => {
+    try {
+      const [lowStock, outOfStock] = await Promise.all([
+        getLowStockProducts(5),
+        getOutOfStockProducts()
+      ]);
+      setLowStockProducts(lowStock);
+      setOutOfStockProducts(outOfStock);
+    } catch (error) {
+      console.error('Error loading stock alerts:', error);
+    }
+  };
+
+  const filteredProducts = useMemo(() => {
     let filtered = products;
 
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
+        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -97,8 +176,51 @@ const AdminProducts = () => {
       filtered = filtered.filter(product => product.category === categoryFilter);
     }
 
-    setFilteredProducts(filtered);
-  };
+    // Filter by stock status
+    if (stockFilter !== 'all') {
+      filtered = filtered.filter(product => {
+        if (stockFilter === 'in-stock') return product.inStock;
+        if (stockFilter === 'low-stock') {
+          if (product.variants?.length) {
+            const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+            return totalStock > 0 && totalStock <= 5;
+          }
+          return product.inStock; // For products without variants, just check if in stock
+        }
+        if (stockFilter === 'out-of-stock') return !product.inStock;
+        return true;
+      });
+    }
+
+    // Sort products
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return sortOrder === 'asc' 
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+        case 'price':
+          const priceA = parseFloat(a.price) || 0;
+          const priceB = parseFloat(b.price) || 0;
+          return sortOrder === 'asc' 
+            ? priceA - priceB
+            : priceB - priceA;
+        case 'category':
+          return sortOrder === 'asc'
+            ? a.category.localeCompare(b.category)
+            : b.category.localeCompare(a.category);
+        case 'date':
+        case 'newest':
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [products, searchTerm, categoryFilter, stockFilter, sortBy, sortOrder]);
 
   const handleDeleteProduct = async (product: Product) => {
     setProductToDelete(product);
@@ -157,18 +279,60 @@ const AdminProducts = () => {
 
   return (
     <div className="space-y-6">
+      {/* Stock Alerts */}
+      {(lowStockProducts.length > 0 || outOfStockProducts.length > 0) && (
+        <div className="space-y-2">
+          {lowStockProducts.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Low Stock Alert
+                </h3>
+              </div>
+              <p className="text-sm text-yellow-700 mt-1">
+                {lowStockProducts.length} product(s) are running low on stock
+              </p>
+            </div>
+          )}
+          {outOfStockProducts.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                <h3 className="text-sm font-medium text-red-800">
+                  Out of Stock Alert
+                </h3>
+              </div>
+              <p className="text-sm text-red-700 mt-1">
+                {outOfStockProducts.length} product(s) are out of stock
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>
           <p className="text-gray-500">Manage your product catalog</p>
         </div>
-        <Button asChild className="mt-4 sm:mt-0">
-          <Link to="/admin/products/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Link>
-        </Button>
+        <div className="flex gap-2 mt-4 sm:mt-0">
+          <Button 
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button asChild>
+            <Link to="/admin/products/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -239,6 +403,38 @@ const AdminProducts = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+              
+              <Select value={stockFilter} onValueChange={setStockFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Stock Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stock</SelectItem>
+                  <SelectItem value="in-stock">In Stock</SelectItem>
+                  <SelectItem value="low-stock">Low Stock</SelectItem>
+                  <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                {sortOrder === 'asc' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </CardContent>

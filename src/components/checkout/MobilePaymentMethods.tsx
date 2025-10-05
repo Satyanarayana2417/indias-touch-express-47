@@ -294,7 +294,7 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
                     key={bank}
                     variant={selectedBank === bank ? "default" : "outline"}
                     className={`w-full justify-start text-left h-auto py-3 px-4 ${
-                      selectedBank === bank ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                      selectedBank === bank ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-white'
                     }`}
                     onClick={() => setSelectedBank(bank)}
                   >
@@ -315,7 +315,7 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
                       ) : null}
                       {/* Fallback to bank initial if logo not available or fails to load */}
                       <div 
-                        className={`w-6 h-6 rounded-full ${logoSrc ? 'hidden' : 'flex'} items-center justify-center text-xs font-bold bg-gray-200 text-gray-600`}
+                        className={`w-6 h-6 rounded-full ${logoSrc ? 'hidden' : 'flex'} items-center justify-center text-xs font-bold bg-white text-gray-600`}
                         style={{ display: logoSrc ? 'none' : 'flex' }}
                       >
                         {bank.charAt(0)}
@@ -367,7 +367,7 @@ const MobilePaymentMethods: React.FC<MobilePaymentMethodsProps> = ({
           <div
             className={`
               cursor-pointer transition-colors duration-200
-              ${expandedMethod === method.id ? 'bg-gray-50' : 'hover:bg-gray-50'}
+              ${expandedMethod === method.id ? 'bg-white' : 'hover:bg-white'}
               ${!method.available ? 'opacity-50 cursor-not-allowed' : ''}
             `}
             onClick={() => method.available && toggleExpanded(method.id)}

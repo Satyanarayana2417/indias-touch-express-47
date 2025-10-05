@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Complete System Test & Fix - Venkat Express</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #4299e1;
+            background: #f7fafc;
+        }
+        
+        .section.critical {
+            border-left-color: #e53e3e;
+            background: #fed7d7;
+        }
+        
+        .section.success {
+            border-left-color: #38a169;
+            background: #c6f6d5;
+        }
+        
+        .section.warning {
+            border-left-color: #d69e2e;
+            background: #faf089;
+        }
+        
+        .section.info {
+            border-left-color: #3182ce;
+            background: #bee3f8;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .status-card.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 2px solid #38a169;
+        }
+        
+        .status-card.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 2px solid #e53e3e;
+        }
+        
+        .status-card.warning {
+            background: #faf089;
+            color: #b7791f;
+            border: 2px solid #d69e2e;
+        }
+        
+        .status-card.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 2px solid #3182ce;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        button.success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        
+        button.danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+        
+        button.warning {
+            background: linear-gradient(135deg, #ed8936 0%, #d69e2e 100%);
+        }
+        
+        button.secondary {
+            background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+        }
+        
+        .test-output {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin: 20px 0;
+            white-space: pre-wrap;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .alert.info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        
+        .alert.warning {
+            background: #faf089;
+            color: #b7791f;
+            border: 1px solid #f6e05e;
+        }
+        
+        .alert.success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .alert.error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">🔧</span> Complete System Test & Fix</h1>
+        
+        <div class="alert info">
+            <strong>🎯 Purpose:</strong> This tool comprehensively tests and fixes image upload issues, product visibility problems, and ensures the entire Venkat Express system works properly.
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section critical">
+            <h3><span class="emoji">⚡</span> Quick Actions</h3>
+            <p><strong>Start here:</strong> Run the complete diagnostic and fix sequence.</p>
+            <button onclick="runCompleteSequence()" class="success">
+                <span class="emoji">🚀</span> Run Complete Test & Fix
+            </button>
+            <button onclick="runDebugOnly()" class="secondary">
+                <span class="emoji">🔍</span> Debug Only (No Fixes)
+            </button>
+            <button onclick="runFixOnly()" class="warning">
+                <span class="emoji">🔧</span> Apply Fixes Only
+            </button>
+            <button onclick="clearOutput()">
+                <span class="emoji">🗑️</span> Clear Output
+            </button>
+        </div>
+
+        <!-- System Status -->
+        <div class="section info">
+            <h3><span class="emoji">📊</span> System Status</h3>
+            <div id="systemStatus" class="status-grid">
+                <div class="status-card info">Checking...</div>
+            </div>
+            <div class="progress-bar">
+                <div id="progressBar" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- Manual Tests -->
+        <div class="section">
+            <h3><span class="emoji">🧪</span> Manual Tests</h3>
+            <p>Test specific components individually:</p>
+            
+            <button onclick="testFirebaseConnection()">
+                <span class="emoji">🔥</span> Test Firebase
+            </button>
+            <button onclick="testImageUpload()">
+                <span class="emoji">📷</span> Test Image Upload
+            </button>
+            <button onclick="testProductSync()">
+                <span class="emoji">📦</span> Test Product Sync
+            </button>
+            <button onclick="testRealtimeSubscription()">
+                <span class="emoji">🔄</span> Test Real-time
+            </button>
+            <button onclick="refreshProductData()">
+                <span class="emoji">🔄</span> Refresh Products
+            </button>
+        </div>
+
+        <!-- Image Upload Test -->
+        <div class="section">
+            <h3><span class="emoji">🖼️</span> Image Upload Test</h3>
+            <p>Test image URL upload functionality:</p>
+            
+            <div class="input-group">
+                <label for="testImageUrl">Test Image URL:</label>
+                <input 
+                    type="url" 
+                    id="testImageUrl" 
+                    placeholder="https://example.com/image.jpg"
+                    value="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400"
+                />
+            </div>
+            
+            <button onclick="testSpecificImageUrl()" class="warning">
+                <span class="emoji">🔍</span> Test This URL
+            </button>
+            <button onclick="testImageUploadFlow()" class="success">
+                <span class="emoji">📤</span> Test Full Upload Flow
+            </button>
+        </div>
+
+        <!-- Output Console -->
+        <div class="section">
+            <h3><span class="emoji">📝</span> Test Output</h3>
+            <div id="testOutput" class="test-output">
+Welcome to the Complete System Test & Fix Tool!
+Click "Run Complete Test & Fix" to begin...
+            </div>
+        </div>
+
+        <!-- Help & Information -->
+        <div class="section info">
+            <h3><span class="emoji">💡</span> Help & Information</h3>
+            <ul>
+                <li><strong>Complete Test & Fix:</strong> Runs full diagnostic and applies all fixes automatically</li>
+                <li><strong>Debug Only:</strong> Identifies issues without making changes</li>
+                <li><strong>Apply Fixes Only:</strong> Applies fixes without re-running diagnostics</li>
+                <li><strong>Manual Tests:</strong> Test specific components individually</li>
+                <li><strong>Image Upload Test:</strong> Test the enhanced image upload functionality</li>
+            </ul>
+            
+            <div class="alert warning">
+                <strong>⚠️ Note:</strong> This tool requires the main application to be running. Make sure you're accessing this from within the Venkat Express admin interface or have the development server running.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testOutput = document.getElementById('testOutput');
+        let systemStatus = document.getElementById('systemStatus');
+        let progressBar = document.getElementById('progressBar');
+        
+        function log(message) {
+            testOutput.textContent += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+            testOutput.scrollTop = testOutput.scrollHeight;
+        }
+        
+        function updateStatus(statusItems) {
+            systemStatus.innerHTML = statusItems.map(item => 
+                `<div class="status-card ${item.type}">${item.message}</div>`
+            ).join('');
+        }
+        
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
+        }
+        
+        function clearOutput() {
+            testOutput.textContent = 'Output cleared. Ready for new tests...\n';
+            updateProgress(0);
+        }
+
+        // Load external scripts
+        async function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function runCompleteSequence() {
+            log('🚀 Starting Complete Test & Fix Sequence...');
+            updateProgress(0);
+            
+            try {
+                // Step 1: Load debug script
+                log('📥 Loading debug script...');
+                await loadScript('./complete-system-debug.js');
+                updateProgress(25);
+                
+                // Step 2: Load fix script  
+                log('📥 Loading fix script...');
+                await loadScript('./complete-system-fix.js');
+                updateProgress(50);
+                
+                // Step 3: Run diagnostics
+                log('🔍 Running system diagnostics...');
+                // Debug script will run automatically
+                updateProgress(75);
+                
+                // Step 4: Apply fixes
+                log('🔧 Applying system fixes...');
+                // Fix script will run automatically
+                updateProgress(100);
+                
+                log('✅ Complete sequence finished! Check results above.');
+                
+                updateStatus([
+                    { type: 'success', message: '✅ Diagnostics Complete' },
+                    { type: 'success', message: '✅ Fixes Applied' },
+                    { type: 'info', message: '📊 Check Console Output' }
+                ]);
+                
+            } catch (error) {
+                log('❌ Error in complete sequence: ' + error.message);
+                updateStatus([
+                    { type: 'error', message: '❌ Sequence Failed' },
+                    { type: 'warning', message: '⚠️ Check Error Details' }
+                ]);
+            }
+        }
+
+        async function runDebugOnly() {
+            log('🔍 Running Debug Only...');
+            updateProgress(0);
+            
+            try {
+                await loadScript('./complete-system-debug.js');
+                updateProgress(100);
+                log('✅ Debug complete! Check results above.');
+                
+                updateStatus([
+                    { type: 'info', message: '🔍 Debug Complete' },
+                    { type: 'warning', message: '⚠️ No Fixes Applied' }
+                ]);
+            } catch (error) {
+                log('❌ Debug error: ' + error.message);
+                updateStatus([{ type: 'error', message: '❌ Debug Failed' }]);
+            }
+        }
+
+        async function runFixOnly() {
+            log('🔧 Applying Fixes Only...');
+            updateProgress(0);
+            
+            try {
+                await loadScript('./complete-system-fix.js');
+                updateProgress(100);
+                log('✅ Fixes applied! Check results above.');
+                
+                updateStatus([
+                    { type: 'success', message: '✅ Fixes Applied' },
+                    { type: 'info', message: '📊 No Diagnostics Run' }
+                ]);
+            } catch (error) {
+                log('❌ Fix error: ' + error.message);
+                updateStatus([{ type: 'error', message: '❌ Fixes Failed' }]);
+            }
+        }
+
+        function testFirebaseConnection() {
+            log('🔥 Testing Firebase connection...');
+            
+            if (window.firebase) {
+                log('✅ Firebase SDK detected');
+                
+                const auth = window.firebase.auth();
+                if (auth?.currentUser) {
+                    log('✅ User authenticated: ' + auth.currentUser.email);
+                } else {
+                    log('❌ User not authenticated');
+                }
+                
+                const db = window.firebase.firestore();
+                if (db) {
+                    log('✅ Firestore available');
+                    
+                    // Test connection
+                    db.collection('products').limit(1).get()
+                        .then(snapshot => {
+                            log(`✅ Firestore connection test: ${snapshot.size} documents`);
+                        })
+                        .catch(error => {
+                            log('❌ Firestore connection error: ' + error.message);
+                        });
+                } else {
+                    log('❌ Firestore not available');
+                }
+            } else {
+                log('❌ Firebase SDK not loaded');
+            }
+        }
+
+        function testImageUpload() {
+            log('📷 Testing image upload functionality...');
+            
+            if (window.fixedUrlImageService) {
+                log('✅ Enhanced image upload service available');
+                
+                // Test URL validation
+                const testUrl = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
+                const validation = window.fixedUrlImageService.validateImageUrl(testUrl);
+                
+                if (validation.isValid) {
+                    log('✅ URL validation working');
+                } else {
+                    log('❌ URL validation failed: ' + validation.error);
+                }
+            } else {
+                log('❌ Enhanced image upload service not available');
+                log('💡 Try running the complete fix first');
+            }
+        }
+
+        function testProductSync() {
+            log('📦 Testing product synchronization...');
+            
+            const isDev = window.location.hostname === 'localhost';
+            log(`🌍 Environment: ${isDev ? 'Development' : 'Production'}`);
+            
+            if (isDev) {
+                const devProducts = JSON.parse(localStorage.getItem('venkat_products') || '[]');
+                log(`💾 localStorage products: ${devProducts.length}`);
+            }
+            
+            if (window.firebase?.firestore) {
+                const db = window.firebase.firestore();
+                db.collection('products').limit(5).get()
+                    .then(snapshot => {
+                        log(`🔥 Firebase products (limited): ${snapshot.size}`);
+                        
+                        snapshot.docs.forEach(doc => {
+                            const data = doc.data();
+                            log(`   • ${data.name} - Image: ${data.image ? 'YES' : 'NO'}`);
+                        });
+                    })
+                    .catch(error => {
+                        log('❌ Firebase products error: ' + error.message);
+                    });
+            }
+        }
+
+        function testRealtimeSubscription() {
+            log('🔄 Testing real-time subscription...');
+            
+            if (window.fixedSubscribeToProducts) {
+                log('✅ Enhanced subscription service available');
+                
+                const unsubscribe = window.fixedSubscribeToProducts((products) => {
+                    log(`📦 Real-time update received: ${products.length} products`);
+                    unsubscribe(); // Stop listening after first update
+                });
+            } else if (window.firebase?.firestore) {
+                log('🔄 Testing basic subscription...');
+                
+                const db = window.firebase.firestore();
+                const unsubscribe = db.collection('products').limit(1).onSnapshot(
+                    (snapshot) => {
+                        log('✅ Real-time subscription working');
+                        unsubscribe();
+                    },
+                    (error) => {
+                        log('❌ Real-time subscription error: ' + error.message);
+                    }
+                );
+            } else {
+                log('❌ No subscription service available');
+            }
+        }
+
+        function refreshProductData() {
+            log('🔄 Refreshing product data...');
+            
+            if (window.manualRefreshProducts) {
+                window.manualRefreshProducts();
+                log('✅ Manual refresh triggered');
+            } else {
+                log('❌ Manual refresh not available');
+                log('💡 Try running the complete fix first');
+            }
+        }
+
+        function testSpecificImageUrl() {
+            const url = document.getElementById('testImageUrl').value;
+            log('🔍 Testing specific image URL: ' + url);
+            
+            if (!url) {
+                log('❌ Please enter a URL to test');
+                return;
+            }
+            
+            if (window.fixedUrlImageService) {
+                const validation = window.fixedUrlImageService.validateImageUrl(url);
+                
+                if (validation.isValid) {
+                    log('✅ URL validation passed');
+                } else {
+                    log('❌ URL validation failed: ' + validation.error);
+                }
+            } else {
+                log('❌ URL validation service not available');
+            }
+        }
+
+        function testImageUploadFlow() {
+            const url = document.getElementById('testImageUrl').value;
+            log('📤 Testing complete image upload flow...');
+            
+            if (!url) {
+                log('❌ Please enter a URL to test');
+                return;
+            }
+            
+            if (!window.fixedUrlImageService) {
+                log('❌ Enhanced image upload service not available');
+                log('💡 Run the complete fix first');
+                return;
+            }
+            
+            log('🔄 Starting upload test (this may take a moment)...');
+            
+            window.fixedUrlImageService.fetchAndUploadImage(url, 'test-product', false)
+                .then(cloudinaryUrl => {
+                    log('✅ Upload test successful!');
+                    log('📥 Cloudinary URL: ' + cloudinaryUrl);
+                })
+                .catch(error => {
+                    log('❌ Upload test failed: ' + error.message);
+                });
+        }
+
+        // Initialize
+        log('🎯 Complete System Test & Fix Tool Ready');
+        log('💡 Click "Run Complete Test & Fix" to begin comprehensive testing');
+        
+        updateStatus([
+            { type: 'info', message: '⏳ Ready to Test' },
+            { type: 'warning', message: '🔧 No Tests Run Yet' }
+        ]);
+    </script>
+</body>
+</html>
